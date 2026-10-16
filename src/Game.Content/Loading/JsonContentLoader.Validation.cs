@@ -1456,7 +1456,7 @@ public sealed partial class JsonContentLoader
     }
 
     private static void ValidateStorySteps(
-        IReadOnlyList<Step> steps,
+        IReadOnlyList<Core.Story.Step> steps,
         InMemoryContentRepository repository,
         string ownerName)
     {
@@ -1464,23 +1464,23 @@ public sealed partial class JsonContentLoader
         {
             switch (step)
             {
-                case DialogueStep:
-                case SetVariableStep:
-                case DeleteVariableStep:
+                case Core.Story.DialogueStep:
+                case Core.Story.SetVariableStep:
+                case Core.Story.DeleteVariableStep:
                     break;
-                case CommandStep command:
+                case Core.Story.CommandStep command:
                     ValidateStoryMediaCommand(command.Call, repository, ownerName);
                     ValidateMapCommandReference(repository, command.Call, ownerName);
                     break;
-                case JumpStep jump:
+                case Core.Story.JumpStep jump:
                     Ensure(repository.StorySegments.ContainsKey(jump.Target),
                         $"{ownerName} jumps to missing story segment '{jump.Target}'.");
                     break;
-                case CallStep call:
+                case Core.Story.CallStep call:
                     Ensure(repository.StorySegments.ContainsKey(call.Target),
                         $"{ownerName} calls missing story segment '{call.Target}'.");
                     break;
-                case ReturnStep:
+                case Core.Story.ReturnStep:
                     break;
                 case ChoiceStep choice:
                     Ensure(choice.Blocks.Count > 0, $"{ownerName} has choice without blocks.");
@@ -1510,7 +1510,7 @@ public sealed partial class JsonContentLoader
                     }
 
                     break;
-                case BattleStep battle:
+                case Core.Story.BattleStep battle:
                     Ensure(repository.Battles.ContainsKey(battle.BattleId),
                         $"{ownerName} references missing battle '{battle.BattleId}'.");
                     foreach (var (outcome, outcomeSteps) in battle.Outcomes)

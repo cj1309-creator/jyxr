@@ -1,3 +1,4 @@
+using Game.Core.Definitions;
 using Game.Core.Model;
 
 namespace Game.Core.Battle;
@@ -6,6 +7,7 @@ public sealed class BattleState
 {
     private readonly List<BattleUnit> _units;
     private List<BattleMessage>? _commandMessages;
+
     private int _commandDepth;
     private int _effectDepth;
     private long _effectSequence;
@@ -13,7 +15,8 @@ public sealed class BattleState
     public BattleState(
         BattleGrid grid,
         IEnumerable<BattleUnit> units,
-        BattleRuleSettings? ruleSettings = null)
+        BattleRuleSettings? ruleSettings = null
+        )
     {
         ArgumentNullException.ThrowIfNull(grid);
         ArgumentNullException.ThrowIfNull(units);
@@ -43,6 +46,7 @@ public sealed class BattleState
             throw new InvalidOperationException($"Multiple units start on cell '{duplicatedPosition.Key}'.");
         }
 
+        
         ScopedEffects = new ScopedBattleEffectRegistry();
         ProjectionResolver = new BattleEffectProjectionResolver(this);
         foreach (var unit in _units)
@@ -70,6 +74,8 @@ public sealed class BattleState
     public bool HasStarted { get; internal set; }
 
     public BattleExecutionScope? CurrentExecutionScope { get; private set; }
+
+    public BattleMainSegment? BattleMainSegment { get;  set; }
 
     public BattleUnit GetUnit(string unitId)
     {

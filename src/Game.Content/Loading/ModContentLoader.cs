@@ -24,6 +24,8 @@ internal static class ModContentLoader
     private const string PatchFilePattern = "*.patch.json";
     private const string StoryDirectoryName = "stories";
     private const string StoryFilePattern = "*.story.json";
+    private const string BattleEventDirectoryName = "battleevents";
+    private const string BattleEventFilePattern = "*.battleevent.json";
 
     public static LoadedModContent Load(IReadOnlyList<ModContentInput> inputs)
     {
@@ -92,6 +94,7 @@ internal static class ModContentLoader
         }
 
         LoadStoryFiles(catalog, input);
+        LoadBattleEventFiles(catalog, input);
         LoadGameConfig(catalog, input);
         LoadPatchFiles(catalog, input);
     }
@@ -115,6 +118,27 @@ internal static class ModContentLoader
             var script = ParseNode(storyPath) as JsonObject
                 ?? throw new ContentLoadException($"Story file '{storyPath}' must contain a JSON object.");
             catalog.AddStoryScript(scriptId, script, input.ModId, storyPath);
+        }
+    }
+    private static void LoadBattleEventFiles(RawContentCatalog catalog, ModContentInput input)
+    {
+        var battleEventDirectory = Path.Combine(input.DataDirectoryPath, BattleEventDirectoryName);
+        if (!Directory.Exists(battleEventDirectory))
+        {
+            return;
+        }
+
+        foreach (var battleEventPath in Directory.GetFiles(battleEventDirectory, BattleEventFilePattern, SearchOption.AllDirectories)
+                     .OrderBy(static path => path, StringComparer.Ordinal))
+        {
+            var relativePath = Path.GetRelativePath(battleEventDirectory, battleEventPath).Replace('\\', '/');
+            const string suffix = ".battleevent.json";
+            JsonContentLoader.Ensure(relativePath.EndsWith(suffix, StringComparison.Ordinal),
+                $"BattleEvent file '{relativePath}' must end with '{suffix}'.");
+            var scriptId = relativePath[..^suffix.Length];
+            var script = ParseNode(battleEventPath) as JsonObject
+                ?? throw new ContentLoadException($"BattleEvent file '{battleEventPath}' must contain a JSON object.");
+            catalog.AddStoryScript(scriptId, script, input.ModId, battleEventPath);
         }
     }
 

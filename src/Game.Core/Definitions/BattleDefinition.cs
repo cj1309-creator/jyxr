@@ -1,5 +1,7 @@
 using Game.Core.Battle;
 using Game.Core.Model;
+using Game.Core.Story;
+
 
 namespace Game.Core.Definitions;
 
@@ -20,6 +22,9 @@ public sealed record BattleDefinition
     public IReadOnlyList<BattleParticipantDefinition> Participants { get; init; } = [];
 
     public IReadOnlyList<BattleRandomParticipantDefinition> RandomParticipants { get; init; } = [];
+
+    public String? BattleEventSegmentId { get; init; }
+
 }
 
 
@@ -52,6 +57,7 @@ public sealed record BattleRandomParticipantDefinition
 
     public bool Boss { get; init; }
 }
+
 public sealed record BattleJoinCombatant
 {
     public required GridPosition Position { get; init; }

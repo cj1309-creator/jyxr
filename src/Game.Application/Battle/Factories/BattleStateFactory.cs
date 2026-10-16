@@ -164,7 +164,14 @@ internal sealed class BattleStateFactory
                 participant.Facing));
         }
 
+        
         var state = new BattleState(new BattleGrid(GridWidth, GridHeight), units, ruleSettings);
+
+        if (!string.IsNullOrWhiteSpace(battle.BattleEventSegmentId)) { 
+        var battleEventSegmentEntry = _session.BattleService.FindBattleEventScript(battle.BattleEventSegmentId);
+        state.BattleMainSegment = battleEventSegmentEntry.Segment;
+        }
+        
         if (!state.Units.Any(unit => unit.Team == PlayerTeam))
         {
             throw new InvalidOperationException($"Battle '{battle.Id}' must contain at least one player team unit.");
