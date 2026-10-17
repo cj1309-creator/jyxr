@@ -43,18 +43,6 @@ public sealed record JumpEvent(
 
 
 
-public sealed record ChoiceContext(
-    string PromptSpeaker,
-    string PromptText,
-    IReadOnlyList<ChoiceOptionView> Options,
-    ChoiceStyle Style = ChoiceStyle.Regular);
-
-/// <param name="Index">Opaque source option index that the host must return when this option is selected.</param>
-/// <param name="Text">Option text presented to the player.</param>
-public sealed record ChoiceOptionView(
-    int Index,
-    string Text);
-
 public sealed record BattleContext(
     string BattleId,
     IReadOnlyList<BattleOutcome> AvailableOutcomes);

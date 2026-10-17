@@ -21,7 +21,7 @@ public sealed record BattleEventScript
     IReadOnlyList<BattleStep>? Fallback);
 
     public sealed record BranchCase(
-    ParsedExpression When,
+    ParsedExpression? When,
     IReadOnlyList<BattleStep> Steps);
    
    public abstract record BattleStep : Step;
@@ -46,6 +46,23 @@ public sealed record BattleEventScript
     string Text) : BattleStep;
     public sealed record CommandStep(
     ParsedCall Call) : BattleStep;
+    public sealed record ChoiceStep(
+    ChoicePrompt Prompt,
+    IReadOnlyList<ChoiceBlock> Blocks,
+    ChoiceStyle Style = ChoiceStyle.Regular) : BattleStep;
+    public abstract record ChoiceBlock;
+    public sealed record ChoiceOptionsBlock(
+        IReadOnlyList<ChoiceOption> Options) : ChoiceBlock;
+    public sealed record ChoiceBranchBlock(
+        IReadOnlyList<ChoiceBranchCase> Cases,
+        IReadOnlyList<ChoiceOption>? Fallback) : ChoiceBlock;
+    public sealed record ChoiceBranchCase(
+        ParsedExpression When,
+        IReadOnlyList<ChoiceOption> Options);
+    public sealed record ChoiceOption(
+        string Text,
+        ParsedExpression? When,
+        IReadOnlyList<BattleStep> Steps);
 
 
 

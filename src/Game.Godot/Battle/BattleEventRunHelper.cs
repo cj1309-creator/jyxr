@@ -1,7 +1,7 @@
 ﻿using Game.Core.Story;
 using System;
 
-public class class BattleEventRunHelper
+public class BattleEventRunHelper
 
 {
     //public static async Task<bool> RunAsync(

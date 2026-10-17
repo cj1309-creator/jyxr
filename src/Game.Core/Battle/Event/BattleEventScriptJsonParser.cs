@@ -23,16 +23,20 @@ internal sealed class BattleEventScriptJsonParser(JsonNode? root, string sourceN
 
     private BattleMainSegment ParseBattleMainSegment(JsonNode? node)
     {
-        
         var element = EnsureObject(node, "segment");
         var name = GetRequiredString(element, "name");
-        //var segments = EnsureArray(GetRequiredProperty(rootObject, "segments"), "segments");
-        return new BattleMainSegment(name, ParseBattleSmallSegments(GetRequiredProperty(element, "smallsegments"), $"segment '{name}'.smallsegments"));
+        return new BattleMainSegment(name, ParseBattleSmallSegments(element, $"segment '{name}'"));
     }
-    private IReadOnlyList<BattleSmallSegment> ParseBattleSmallSegments(JsonNode? node, string path)
+    private IReadOnlyList<BattleSmallSegment> ParseBattleSmallSegments(JsonObject segment, string path)
     {
-        var elements = EnsureArray(node, path);
-        return elements.Select(element => ParseBattleSmallSegment(EnsureObject(element, path))).ToArray();
+        if (TryGetProperty(segment, "smallsegments", out var smallSegmentsNode) && smallSegmentsNode is not null)
+        {
+            var elements = EnsureArray(smallSegmentsNode, $"{path}.smallsegments");
+            return elements.Select(element => ParseBattleSmallSegment(EnsureObject(element, $"{path}.smallsegments"))).ToArray();
+        }
+
+        var steps = ParseSteps(GetRequiredProperty(segment, "steps"), $"{path}.steps");
+        return [new BattleSmallSegment([new BranchCase(null, steps)], null)];
     }
     private BattleSmallSegment ParseBattleSmallSegment(JsonObject element)
     {
@@ -40,8 +44,19 @@ internal sealed class BattleEventScriptJsonParser(JsonNode? root, string sourceN
         var cases = caseNodes.Select(node =>
         {
             var caseElement = EnsureObject(node, "battlesmallsegment.case");
+            ParsedExpression? when = null;
+            if (TryGetProperty(caseElement, "when", out var whenNode))
+            {
+                if (!TryGetString(whenNode, out var whenSource))
+                {
+                    throw new BattleEventRuntimeException("battlesmallsegment.case.when must be a string or be omitted.");
+                }
+
+                when = ParseExpression(whenSource, "battlesmallsegment.case.when");
+            }
+
             return new BranchCase(
-                ParseExpression(GetRequiredString(caseElement, "when"), "battlesmallsegment.case.when"),
+                when,
                 ParseSteps(GetRequiredProperty(caseElement, "steps"), "battlesmallsegment.case.steps"));
         }).ToArray();
 
@@ -73,7 +88,7 @@ internal sealed class BattleEventScriptJsonParser(JsonNode? root, string sourceN
             "jump" => new JumpStep(GetRequiredString(element, "target")),
             "call" => new CallStep(GetRequiredString(element, "target")),
             "return" => new ReturnStep(),
-            //"choice" => ParseChoiceStep(element),
+            "choice" => ParseChoiceStep(element),
             //"battle" => ParseBattleStep(element),
             //"branch" => ParseBranchStep(element),
             _ => throw new BattleEventRuntimeException($"Unsupported step kind '{kind}'."),

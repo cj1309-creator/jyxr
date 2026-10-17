@@ -2,7 +2,7 @@
 using Game.Core.Serialization;
 using System.Text.Json.Nodes;
 
-namespace Game.Core.Batlle;
+namespace Game.Core.Battle;
 
 public static class BattleEventScriptJson
 {

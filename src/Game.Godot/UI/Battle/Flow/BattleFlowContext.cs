@@ -173,6 +173,9 @@ internal sealed class BattleFlowContext : IBattleFlowContext
 		return true;
 	}
 
+	public Task<bool> RunBattleEventAsync(BattleMainSegment battleEventSegment) =>
+		Game.BattleService.RunBattleEventAsync(battleEventSegment);
+
 	public bool ExecuteEndAction(BattleUnit actingUnit)
 	{
 		var result = Engine.EndAction(State, actingUnit.Id);

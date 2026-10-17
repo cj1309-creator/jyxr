@@ -1482,16 +1482,16 @@ public sealed partial class JsonContentLoader
                     break;
                 case Core.Story.ReturnStep:
                     break;
-                case ChoiceStep choice:
+                case Core.Story.ChoiceStep choice:
                     Ensure(choice.Blocks.Count > 0, $"{ownerName} has choice without blocks.");
                     foreach (var block in choice.Blocks)
                     {
                         switch (block)
                         {
-                            case ChoiceOptionsBlock optionsBlock:
+                            case Core.Story.ChoiceOptionsBlock optionsBlock:
                                 ValidateChoiceOptions(optionsBlock.Options, repository, ownerName);
                                 break;
-                            case ChoiceBranchBlock branchBlock:
+                            case Core.Story.ChoiceBranchBlock branchBlock:
                                 Ensure(branchBlock.Cases.Count > 0, $"{ownerName} has choice branch without cases.");
                                 foreach (var branchCase in branchBlock.Cases)
                                 {
@@ -1582,7 +1582,7 @@ public sealed partial class JsonContentLoader
     }
 
     private static void ValidateChoiceOptions(
-        IReadOnlyList<ChoiceOption> options,
+        IReadOnlyList<Core.Story.ChoiceOption> options,
         InMemoryContentRepository repository,
         string ownerName)
     {

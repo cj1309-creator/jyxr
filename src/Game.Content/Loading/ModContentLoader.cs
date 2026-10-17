@@ -1,5 +1,6 @@
 using System.Text.Json;
 using System.Text.Json.Nodes;
+using Game.Core.Battle;
 using Game.Core.Model;
 using Game.Core.Story;
 
@@ -138,7 +139,7 @@ internal static class ModContentLoader
             var scriptId = relativePath[..^suffix.Length];
             var script = ParseNode(battleEventPath) as JsonObject
                 ?? throw new ContentLoadException($"BattleEvent file '{battleEventPath}' must contain a JSON object.");
-            catalog.AddStoryScript(scriptId, script, input.ModId, battleEventPath);
+            catalog.AddBattleEventScript(scriptId, script, input.ModId, battleEventPath);
         }
     }
 
@@ -726,6 +727,7 @@ internal static class ModContentLoader
             var package = packageNode.Deserialize<ContentPackage>(JsonContentLoader.ContentJson)
                 ?? throw new ContentLoadException("Unable to deserialize content package.");
             package.StoryScripts = catalog.BuildStoryScripts();
+            package.BattleEventScripts = catalog.BuildBattleEventScripts();
             return package;
         }
         catch (JsonException exception)
@@ -828,6 +830,8 @@ internal static class ModContentLoader
             ContentTypeCatalog.All.ToDictionary(static spec => spec.Kind, static _ => new Dictionary<string, string>(StringComparer.Ordinal), StringComparer.Ordinal);
         private readonly Dictionary<string, StoryDocument> _stories = new(StringComparer.Ordinal);
         private readonly Dictionary<string, string> _segmentOwners = new(StringComparer.Ordinal);
+        private readonly Dictionary<string, StoryDocument> _battleEventStories = new(StringComparer.Ordinal);
+        private readonly Dictionary<string, string> _battleEventSegmentOwners = new(StringComparer.Ordinal);
         private readonly Dictionary<string, PatchWrite> _writes = new(StringComparer.Ordinal);
 
         public JsonObject? GameConfig { get; private set; }
@@ -871,6 +875,29 @@ internal static class ModContentLoader
             }
 
             _stories.Add(scriptId, new StoryDocument(script, modId, filePath));
+        }
+
+        public void AddBattleEventScript(string scriptId, JsonObject script, string modId, string filePath)
+        {
+            if (_battleEventStories.ContainsKey(scriptId))
+            {
+                throw new ContentLoadException($"BattleEvent script '{scriptId}' from mod '{modId}' is duplicated.");
+            }
+
+            var segments = script["segments"] as JsonArray
+                ?? throw new ContentLoadException($"BattleEvent script '{filePath}' is missing array 'segments'.");
+            foreach (var node in segments)
+            {
+                var segment = node as JsonObject
+                    ?? throw new ContentLoadException($"BattleEvent script '{filePath}' contains a non-object segment.");
+                var segmentId = GetRequiredString(segment, "name", filePath);
+                if (!_battleEventSegmentOwners.TryAdd(segmentId, scriptId))
+                {
+                    throw new ContentLoadException($"BattleEvent segment '{segmentId}' from mod '{modId}' is duplicated.");
+                }
+            }
+
+            _battleEventStories.Add(scriptId, new StoryDocument(script, modId, filePath));
         }
 
         public void SetGameConfig(JsonObject config, string modId, string filePath)
@@ -986,6 +1013,17 @@ internal static class ModContentLoader
             foreach (var (scriptId, story) in _stories)
             {
                 result.Add(scriptId, StoryScriptJson.Parse(story.Node, story.FilePath));
+            }
+
+            return result;
+        }
+
+        public Dictionary<string, BattleEventScript> BuildBattleEventScripts()
+        {
+            var result = new Dictionary<string, BattleEventScript>(StringComparer.Ordinal);
+            foreach (var (scriptId, story) in _battleEventStories)
+            {
+                result.Add(scriptId, BattleEventScriptJson.Parse(story.Node, story.FilePath));
             }
 
             return result;
