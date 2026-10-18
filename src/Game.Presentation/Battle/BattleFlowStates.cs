@@ -4,7 +4,7 @@ using Game.Core.Model.Skills;
 
 namespace Game.Presentation.Battle;
 
-public sealed class WaitingTimelineState : BattleFlowState
+public sealed class WaitingTimelineState(bool suppressBattleEvent = false) : BattleFlowState
 {
 	private static readonly BattleInteractionState ViewState = new(
 		BattleFlowStateKind.WaitingTimeline,
@@ -15,6 +15,7 @@ public sealed class WaitingTimelineState : BattleFlowState
 	public override IReadOnlySet<BattleFlowStateKind> AllowedTransitions { get; } = Transitions(
 		BattleFlowStateKind.SelectingMove,
 		BattleFlowStateKind.AutomatedTurn,
+		BattleFlowStateKind.BattleEvent,
 		BattleFlowStateKind.BattleEnded);
 
 	public override async Task EnterAsync(BattleFlowStateMachine machine)
@@ -24,6 +25,14 @@ public sealed class WaitingTimelineState : BattleFlowState
 		if (context.TryGetBattleResult(out var isWin))
 		{
 			await machine.TransitionAsync(new BattleEndedState(isWin));
+			return;
+		}
+
+		if (!suppressBattleEvent && context.State.BattleMainSegment is { } battleEventSegment)
+		{
+			await machine.TransitionAsync(new BattleEventState(
+				battleEventSegment,
+				new WaitingTimelineState(suppressBattleEvent: true)));
 			return;
 		}
 
@@ -59,7 +68,6 @@ public abstract class InteractiveBattleFlowState : BattleFlowState
 		BattleFlowStateKind.SelectingItem,
 		BattleFlowStateKind.SelectingItemTarget,
 		BattleFlowStateKind.PresentingAction,
-		BattleFlowStateKind.BattleEvent,
 		BattleFlowStateKind.BattleEnded);
 
 	public override Task EnterAsync(BattleFlowStateMachine machine)
@@ -106,17 +114,9 @@ public abstract class InteractiveBattleFlowState : BattleFlowState
 			case BattleUiIntent.EndAction:
 				
 
-                if (context.ExecuteEndAction(actingUnit))
+				if (context.ExecuteEndAction(actingUnit))
 				{
-					if (machine.Context.State.BattleMainSegment is { } battleEventSegment)
-					{
-						//machine.Context.State.BattleMainSegment = null;
-						//await machine.TransitionAsync(new BattleEventState(battleEventSegment, new WaitingTimelineState()));
-					}
-					else
-					{
-						await machine.TransitionAsync(new WaitingTimelineState());
-					}
+					await machine.TransitionAsync(new WaitingTimelineState());
 				}
 				else
 				{

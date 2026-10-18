@@ -27,12 +27,12 @@ internal sealed class BattleEventScriptJsonParser(JsonNode? root, string sourceN
         var name = GetRequiredString(element, "name");
         return new BattleMainSegment(name, ParseBattleSmallSegments(element, $"segment '{name}'"));
     }
-    private IReadOnlyList<BattleSmallSegment> ParseBattleSmallSegments(JsonObject segment, string path)
+    private List<BattleSmallSegment> ParseBattleSmallSegments(JsonObject segment, string path)
     {
         if (TryGetProperty(segment, "smallsegments", out var smallSegmentsNode) && smallSegmentsNode is not null)
         {
             var elements = EnsureArray(smallSegmentsNode, $"{path}.smallsegments");
-            return elements.Select(element => ParseBattleSmallSegment(EnsureObject(element, $"{path}.smallsegments"))).ToArray();
+            return elements.Select(element => ParseBattleSmallSegment(EnsureObject(element, $"{path}.smallsegments"))).ToList();
         }
 
         var steps = ParseSteps(GetRequiredProperty(segment, "steps"), $"{path}.steps");

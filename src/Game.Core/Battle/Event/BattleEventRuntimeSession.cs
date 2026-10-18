@@ -38,7 +38,7 @@ internal sealed partial class BattleEventRuntimeSession(
 
             string? jumpTarget = null;
 
-            await foreach (var stepResult in ExecuteSegmentAsync(battleMainSegment, ct))
+            await foreach (var stepResult in ExecuteMainSegmentAsync(battleMainSegment, ct))
             {
                 if (stepResult.Event is not null)
                 {
@@ -86,7 +86,7 @@ internal sealed partial class BattleEventRuntimeSession(
         throw new StoryRuntimeException($"Segment '{name}' does not exist.");
     }
 
-    private async IAsyncEnumerable<StepResult> ExecuteSegmentAsync(
+    private async IAsyncEnumerable<StepResult> ExecuteMainSegmentAsync(
         BattleMainSegment segment,
         [EnumeratorCancellation] CancellationToken ct)
     {
@@ -133,13 +133,13 @@ internal sealed partial class BattleEventRuntimeSession(
         }
     }
     private async IAsyncEnumerable<StepResult> ExecuteSmallSegmentAsync(
-        IReadOnlyList<BattleSmallSegment> battleSmallSegments,
+        List<BattleSmallSegment> battleSmallSegments,
         [EnumeratorCancellation] CancellationToken ct)
     {
         foreach (var smallSegment in battleSmallSegments)
         {
-
-               await foreach (var stepResult in ExecuteBranchAsync(smallSegment, ct))
+            //battleSmallSegments.Remove(smallSegment);
+            await foreach (var stepResult in ExecuteBranchAsync(smallSegment, ct))
                {
                    yield return stepResult;
                }  
@@ -403,7 +403,7 @@ internal sealed partial class BattleEventRuntimeSession(
                     yield break;
                 }
 
-                await foreach (var result in ExecuteSegmentAsync(segment, ct))
+                await foreach (var result in ExecuteMainSegmentAsync(segment, ct))
                 {
                     if (result.Event is not null)
                     {

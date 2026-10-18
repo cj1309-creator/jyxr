@@ -13,7 +13,7 @@ public sealed record BattleEventScript
 
     public sealed record BattleMainSegment(
     string Name,
-    IReadOnlyList<BattleSmallSegment> BattleSmallSegments);
+    List<BattleSmallSegment> BattleSmallSegments);
 
 
     public sealed record BattleSmallSegment(
