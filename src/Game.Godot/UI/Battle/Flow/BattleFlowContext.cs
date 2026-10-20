@@ -174,7 +174,7 @@ internal sealed class BattleFlowContext : IBattleFlowContext
 	}
 
 	public Task<bool> RunBattleEventAsync(BattleMainSegment battleEventSegment) =>
-		Game.BattleService.RunBattleEventAsync(battleEventSegment);
+		Game.BattleService.RunBattleEventAsync(battleEventSegment, State);
 
 	public bool ExecuteEndAction(BattleUnit actingUnit)
 	{

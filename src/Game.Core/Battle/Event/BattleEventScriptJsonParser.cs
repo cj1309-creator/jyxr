@@ -66,7 +66,20 @@ internal sealed class BattleEventScriptJsonParser(JsonNode? root, string sourceN
             fallback = ParseSteps(fallbackNode, "battlesmallsegment.fallback");
         }
 
-        return new BattleSmallSegment(cases, fallback);
+        int? maxExecutions = null;
+        if (TryGetProperty(element, "maxExecutions", out var maxExecutionsNode))
+        {
+            if (maxExecutionsNode is not JsonValue maxExecutionsValue ||
+                !maxExecutionsValue.TryGetValue<int>(out var parsedMaxExecutions) ||
+                parsedMaxExecutions <= 0)
+            {
+                throw new BattleEventRuntimeException("battlesmallsegment.maxExecutions must be a positive integer.");
+            }
+
+            maxExecutions = parsedMaxExecutions;
+        }
+
+        return new BattleSmallSegment(cases, fallback, maxExecutions);
     }
 
     private IReadOnlyList<BattleStep> ParseSteps(JsonNode? node, string path)

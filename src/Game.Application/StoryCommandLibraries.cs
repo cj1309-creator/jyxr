@@ -395,8 +395,4 @@ internal sealed class SpecialFlowStoryCommands
             cancellationToken);
 }
 
-internal sealed class BattleStateCommands
-{
 
-
-}

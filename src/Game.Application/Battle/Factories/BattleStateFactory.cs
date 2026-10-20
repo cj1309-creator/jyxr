@@ -310,6 +310,73 @@ internal sealed class BattleStateFactory
     private CharacterInstance? ResolvePartyCharacter(string characterId) =>
         State.Party.TryGetCharacter(characterId, out var character) ? character : null;
 
+
+
+    public void ApplyHpChange(BattleUnit unit, double amount, string kind)
+    {
+        ArgumentNullException.ThrowIfNull(unit);
+        if (!double.IsFinite(amount) || amount == 0d)
+        {
+            return;
+        }
+
+        var resolved = kind == "Flat"
+            ? (int)Math.Round(amount, MidpointRounding.AwayFromZero)
+            : (int)Math.Round(unit.MaxHp * amount, MidpointRounding.AwayFromZero);
+
+        if (resolved > 0)
+        {
+            unit.RestoreHp(resolved);
+        }
+        else if (resolved < 0)
+        {
+            unit.TakeDamage(-resolved);
+        }
+    }
+
+    public void ApplyMpChange(BattleUnit unit, double amount, string kind)
+    {
+        ArgumentNullException.ThrowIfNull(unit);
+        if (!double.IsFinite(amount) || amount == 0d)
+        {
+            return;
+        }
+
+        var resolved = kind == "Flat"
+            ? (int)Math.Round(amount, MidpointRounding.AwayFromZero)
+            : (int)Math.Round(unit.MaxHp * amount, MidpointRounding.AwayFromZero);
+
+        if (resolved > 0)
+        {
+            unit.RestoreMp(resolved);
+        }
+        else if (resolved < 0)
+        {
+            unit.DamageMp(-resolved);
+        }
+    }
+
+    public void UnitsHpChange(BattleState state,List<string> unitIds, List<int> amounts, List<string> kinds)
+    {
+        
+        var queueamounts = new Queue<int>(amounts);
+        var queuekinds = new Queue<string>(kinds);
+        foreach (var unitId in unitIds) {
+            var unit =state.GetUnit(unitId);
+            ApplyHpChange(unit, queueamounts.Dequeue(), queuekinds.Dequeue());
+        }
+    }
+    public void UnitsMpChange(BattleState state, List<string> unitIds, List<int> amounts, List<string> kinds)
+    {
+        var queueamounts = new Queue<int>(amounts);
+        var queuekinds = new Queue<string>(kinds);
+        foreach (var unitId in unitIds)
+        {
+            var unit = state.GetUnit(unitId);
+            ApplyMpChange(unit, queueamounts.Dequeue(), queuekinds.Dequeue());
+        }
+    }
+
     private static BattleUnit CreateUnit(
         string id,
         CharacterInstance character,

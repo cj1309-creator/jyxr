@@ -77,6 +77,8 @@ public sealed class BattleState
 
     public BattleMainSegment? BattleMainSegment { get;  set; }
 
+    public BattleEventProgress BattleEvents { get; } = new();
+
     public BattleUnit GetUnit(string unitId)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(unitId);
@@ -87,6 +89,22 @@ public sealed class BattleState
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(unitId);
         return _units.FirstOrDefault(unit => string.Equals(unit.Id, unitId, StringComparison.Ordinal));
+    }
+
+    public bool TryGetUnitByName(string name, out BattleUnit? unit)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(name);
+        unit = _units.FirstOrDefault(existing =>
+            string.Equals(existing.Character.Name, name, StringComparison.Ordinal));
+        return unit is not null;
+    }
+
+    public IReadOnlyList<BattleUnit> GetUnitsByName(string name)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(name);
+        return _units
+            .Where(existing => string.Equals(existing.Character.Name, name, StringComparison.Ordinal))
+            .ToList();
     }
 
     public BattleUnit? GetUnitAt(GridPosition position, string? ignoredUnitId = null) =>
@@ -195,5 +213,31 @@ public sealed class BattleState
             state.CurrentExecutionScope = parent;
             _disposed = true;
         }
+    }
+}
+
+public sealed class BattleEventProgress
+{
+    private readonly Dictionary<string, Dictionary<int, int>> _counts = new(StringComparer.Ordinal);
+
+    public int CountExecutions(string mainSegmentName, int smallSegmentIndex)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(mainSegmentName);
+        return _counts.TryGetValue(mainSegmentName, out var byIndex) &&
+            byIndex.TryGetValue(smallSegmentIndex, out var count)
+                ? count
+                : 0;
+    }
+
+    public void RecordExecution(string mainSegmentName, int smallSegmentIndex)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(mainSegmentName);
+        if (!_counts.TryGetValue(mainSegmentName, out var byIndex))
+        {
+            byIndex = new Dictionary<int, int>();
+            _counts[mainSegmentName] = byIndex;
+        }
+
+        byIndex[smallSegmentIndex] = byIndex.TryGetValue(smallSegmentIndex, out var count) ? count + 1 : 1;
     }
 }

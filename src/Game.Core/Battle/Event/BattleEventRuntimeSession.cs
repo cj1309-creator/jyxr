@@ -5,6 +5,7 @@ namespace Game.Core.Battle;
 internal sealed partial class BattleEventRuntimeSession(
     BattleEventScript script,
     BattleMainSegment battleMainSegment,
+    BattleState state,
     IStoryRuntimeContext host,
     string? startSegment,
     CancellationToken cancellationToken)
@@ -93,7 +94,7 @@ internal sealed partial class BattleEventRuntimeSession(
         yield return StepResult.FromEvent(new SegmentStartedEvent(segment.Name));
 
         StepResult? control = null;
-        await foreach (var stepResult in ExecuteSmallSegmentAsync(segment.BattleSmallSegments, ct))
+        await foreach (var stepResult in ExecuteSmallSegmentAsync(segment, ct))
         {
             if (!host.IsExecutionActive)
             {
@@ -133,18 +134,26 @@ internal sealed partial class BattleEventRuntimeSession(
         }
     }
     private async IAsyncEnumerable<StepResult> ExecuteSmallSegmentAsync(
-        List<BattleSmallSegment> battleSmallSegments,
+        BattleMainSegment mainSegment,
         [EnumeratorCancellation] CancellationToken ct)
     {
-        foreach (var smallSegment in battleSmallSegments)
+        var smallSegments = mainSegment.BattleSmallSegments;
+        for (var index = 0; index < smallSegments.Count; index++)
         {
-            //battleSmallSegments.Remove(smallSegment);
-            await foreach (var stepResult in ExecuteBranchAsync(smallSegment, ct))
-               {
-                   yield return stepResult;
-               }  
-        }
+            var smallSegment = smallSegments[index];
+            if (smallSegment.MaxExecutions is { } maxExecutions &&
+                state.BattleEvents.CountExecutions(mainSegment.Name, index) >= maxExecutions)
+            {
+                continue;
+            }
 
+            state.BattleEvents.RecordExecution(mainSegment.Name, index);
+
+            await foreach (var stepResult in ExecuteBranchAsync(smallSegment, ct))
+            {
+                yield return stepResult;
+            }
+        }
     }
     private async IAsyncEnumerable<StepResult> ExecuteBranchAsync(
     BattleSmallSegment battleSmallSegments,

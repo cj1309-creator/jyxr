@@ -23,21 +23,23 @@ public class BattleEventControl
     public async IAsyncEnumerable<BattleEvent> RunAsync(
     BattleEventSegmentEntry entry,
     BattleMainSegment battleEventSegment,
+    BattleState state,
     StoryExecutionContext? context = null,
     [System.Runtime.CompilerServices.EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
         var executionState = _session.State;
         var executionContext = context ?? StoryExecutionContext.Empty;
-        var runtimeDispatcher = new StoryCommandDispatcher(_session, Host, executionContext, includeDebugCommands: false);
+        var runtimeDispatcher = new StoryCommandDispatcher(_session, Host, executionContext, includeDebugCommands: false, battleState: state);
         var runtimeHost = new ApplicationStoryRuntimeHost(
             _session,
             executionState,
             Host,
             runtimeDispatcher,
             new StoryTextInterpolator(_session),
-            _expressions.Create(executionContext));
+            _expressions.Create(executionContext)
+            );
 
-        await foreach (var battleEvent in _runtime.RunAsync(entry.Script, battleEventSegment, runtimeHost, entry.Segment.Name, cancellationToken))
+        await foreach (var battleEvent in _runtime.RunAsync(entry.Script, battleEventSegment, state, runtimeHost, entry.Segment.Name, cancellationToken))
         {
             if (battleEvent is Core.Battle.SegmentCompletedEvent completed)
             {

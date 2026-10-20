@@ -61,6 +61,11 @@ public sealed class BattleService
             _session.ProfileService.AddKills(defeatedEnemyCount);
         }
     }
+    private void ApplyHpChange(BattleUnit unit, double amount, string kind)
+    => _stateFactory.ApplyHpChange(unit,amount,kind);
+
+    public void UnitsMpChange(BattleState state, List<string> unitIds, List<int> amounts, List<string> kinds)
+=> _stateFactory.UnitsMpChange(state, unitIds, amounts, kinds);
 
     public void RestorePartyBattleResources() =>
         _carryoverService.RestorePartyBattleResources();
@@ -75,6 +80,7 @@ public sealed class BattleService
 
     public async Task<bool> RunBattleEventAsync(
         BattleMainSegment battleEventSegment,
+        BattleState state,
         StoryExecutionContext? context = null,
         CancellationToken cancellationToken = default)
     {
@@ -85,7 +91,7 @@ public sealed class BattleService
         var completed = false;
         try
         {
-            await foreach (var battleEvent in _battleeventcontrol.RunAsync(entry, battleEventSegment, context, cancellationToken))
+            await foreach (var battleEvent in _battleeventcontrol.RunAsync(entry, battleEventSegment, state, context, cancellationToken))
             {
                 completed = battleEvent is Core.Battle.SegmentCompletedEvent;
             }

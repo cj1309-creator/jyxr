@@ -18,7 +18,8 @@ public sealed record BattleEventScript
 
     public sealed record BattleSmallSegment(
     IReadOnlyList<BranchCase> Cases,
-    IReadOnlyList<BattleStep>? Fallback);
+    IReadOnlyList<BattleStep>? Fallback,
+    int? MaxExecutions = null);
 
     public sealed record BranchCase(
     ParsedExpression? When,
