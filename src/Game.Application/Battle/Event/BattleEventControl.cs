@@ -2,7 +2,9 @@
 using Game.Core.Definitions;
 using Game.Core.Model;
 using Game.Core.Story;
+using System.Linq.Expressions;
 using System.Runtime.CompilerServices;
+using static System.Collections.Specialized.BitVector32;
 
 namespace Game.Application;
 
@@ -11,13 +13,12 @@ public class BattleEventControl
 
     private readonly GameSession _session;
     private readonly BattleRuntime _runtime;
-    private readonly GameExpressionEnvironment _expressions;
+    private  GameExpressionEnvironment? _expressions;
     public IRuntimeHost Host { get; }
-    public BattleEventControl(GameSession session, BattleRuntime runtime, GameExpressionEnvironment expressions, IRuntimeHost host)
+    public BattleEventControl(GameSession session, BattleRuntime runtime, IRuntimeHost host)
     {
         _session = session;
         _runtime = runtime;
-        _expressions = expressions;
         Host = host;
     }
     public async IAsyncEnumerable<BattleEvent> RunAsync(
@@ -29,6 +30,7 @@ public class BattleEventControl
     {
         var executionState = _session.State;
         var executionContext = context ?? StoryExecutionContext.Empty;
+        _expressions = new GameExpressionEnvironment(_session, state);
         var runtimeDispatcher = new StoryCommandDispatcher(_session, Host, executionContext, includeDebugCommands: false, battleState: state);
         var runtimeHost = new ApplicationStoryRuntimeHost(
             _session,

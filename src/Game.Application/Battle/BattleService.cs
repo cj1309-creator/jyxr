@@ -13,7 +13,7 @@ public sealed class BattleService
     private readonly BattleSettlementService _settlementService;
     private readonly BattleCarryoverService _carryoverService;
     public IRuntimeHost Host { get; }
-    private readonly GameExpressionEnvironment _expressions;
+    
     private readonly BattleEventControl _battleeventcontrol;
     private readonly BattleRuntime _runtime = new();
     public BattleService(GameSession session, IRuntimeHost host)
@@ -26,8 +26,8 @@ public sealed class BattleService
         _settlementService = new BattleSettlementService(session, zhenlongqijuFactory);
         _carryoverService = new BattleCarryoverService(session);
         Host = host ?? throw new ArgumentNullException(nameof(host));
-        _expressions = new GameExpressionEnvironment(session);
-        _battleeventcontrol = new BattleEventControl(session, _runtime, _expressions, Host);
+        
+        _battleeventcontrol = new BattleEventControl(session, _runtime, Host);
     }
 
     public BattleState BuildBattleState(SpecialBattleRequest request) =>
@@ -64,7 +64,7 @@ public sealed class BattleService
     private void ApplyHpChange(BattleUnit unit, double amount, string kind)
     => _stateFactory.ApplyHpChange(unit,amount,kind);
 
-    public void UnitsMpChange(BattleState state, List<string> unitIds, List<int> amounts, List<string> kinds)
+public void UnitsMpChange(BattleState state, IReadOnlyList<string> unitIds, IReadOnlyList<double> amounts, IReadOnlyList<string>? kinds = null)
 => _stateFactory.UnitsMpChange(state, unitIds, amounts, kinds);
 
     public void RestorePartyBattleResources() =>

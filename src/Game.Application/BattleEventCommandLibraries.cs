@@ -20,9 +20,13 @@ internal sealed class InventoryCurrencyBattleEventCommands
     }
 
     [BattleEventCommand("change_units_mp")]
-    public ValueTask ChangeUnit(List<string> unitIds, List<int> amounts, List<string> kinds , CancellationToken cancellationToken = default)
+    public ValueTask ChangeUnit(
+        IReadOnlyList<string> unitIds,
+        IReadOnlyList<double> amounts,
+        IReadOnlyList<string>? kinds = null,
+        CancellationToken cancellationToken = default)
     {
-        _session.BattleService.UnitsMpChange(_battleState, unitIds, amounts,kinds);
+        _session.BattleService.UnitsMpChange(_battleState, unitIds, amounts, kinds);
 
         return ValueTask.CompletedTask;
     }

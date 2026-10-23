@@ -144,8 +144,12 @@ internal sealed class BattleStateFactory
                 npcCharacterProcessor(character, tempFactory);
             }
 
+            var participantKey = string.IsNullOrWhiteSpace(participant.CharacterId)
+                ? character.Id
+                : participant.CharacterId;
+            //ԭ����participant_{index}_{character.Id}
             units.Add(CreateUnit(
-                $"participant_{index}_{character.Id}",
+                $"participant_{index}_{participantKey}",
                 character,
                 participant.Team,
                 participant.Position,
@@ -312,7 +316,7 @@ internal sealed class BattleStateFactory
 
 
 
-    public void ApplyHpChange(BattleUnit unit, double amount, string kind)
+    public void ApplyHpChange(BattleUnit unit, double amount, string? kind)
     {
         ArgumentNullException.ThrowIfNull(unit);
         if (!double.IsFinite(amount) || amount == 0d)
@@ -320,10 +324,7 @@ internal sealed class BattleStateFactory
             return;
         }
 
-        var resolved = kind == "Flat"
-            ? (int)Math.Round(amount, MidpointRounding.AwayFromZero)
-            : (int)Math.Round(unit.MaxHp * amount, MidpointRounding.AwayFromZero);
-
+        var resolved = ResolveAmount(unit.MaxHp, amount, kind);
         if (resolved > 0)
         {
             unit.RestoreHp(resolved);
@@ -334,7 +335,7 @@ internal sealed class BattleStateFactory
         }
     }
 
-    public void ApplyMpChange(BattleUnit unit, double amount, string kind)
+    public void ApplyMpChange(BattleUnit unit, double amount, string? kind)
     {
         ArgumentNullException.ThrowIfNull(unit);
         if (!double.IsFinite(amount) || amount == 0d)
@@ -342,10 +343,7 @@ internal sealed class BattleStateFactory
             return;
         }
 
-        var resolved = kind == "Flat"
-            ? (int)Math.Round(amount, MidpointRounding.AwayFromZero)
-            : (int)Math.Round(unit.MaxHp * amount, MidpointRounding.AwayFromZero);
-
+        var resolved = ResolveAmount(unit.MaxMp, amount, kind);
         if (resolved > 0)
         {
             unit.RestoreMp(resolved);
@@ -356,24 +354,65 @@ internal sealed class BattleStateFactory
         }
     }
 
-    public void UnitsHpChange(BattleState state,List<string> unitIds, List<int> amounts, List<string> kinds)
+    private static int ResolveAmount(int max, double amount, string? kind)
     {
-        
-        var queueamounts = new Queue<int>(amounts);
-        var queuekinds = new Queue<string>(kinds);
-        foreach (var unitId in unitIds) {
-            var unit =state.GetUnit(unitId);
-            ApplyHpChange(unit, queueamounts.Dequeue(), queuekinds.Dequeue());
-        }
-    }
-    public void UnitsMpChange(BattleState state, List<string> unitIds, List<int> amounts, List<string> kinds)
-    {
-        var queueamounts = new Queue<int>(amounts);
-        var queuekinds = new Queue<string>(kinds);
-        foreach (var unitId in unitIds)
+        if (string.IsNullOrWhiteSpace(kind) ||
+            string.Equals(kind, "flat", StringComparison.OrdinalIgnoreCase))
         {
-            var unit = state.GetUnit(unitId);
-            ApplyMpChange(unit, queueamounts.Dequeue(), queuekinds.Dequeue());
+            return (int)Math.Round(amount, MidpointRounding.AwayFromZero);
+        }
+
+        if (string.Equals(kind, "ratio", StringComparison.OrdinalIgnoreCase))
+        {
+            return (int)Math.Round(max * amount, MidpointRounding.AwayFromZero);
+        }
+
+        throw new ArgumentException($"Unknown amount kind '{kind}'; expected 'flat' or 'ratio'.", nameof(kind));
+    }
+
+    public void UnitsHpChange(
+        BattleState state,
+        IReadOnlyList<string> unitIds,
+        IReadOnlyList<double> amounts,
+        IReadOnlyList<string>? kinds = null) =>
+        ApplyUnitsChange(state, unitIds, amounts, kinds, ApplyHpChange);
+
+    public void UnitsMpChange(
+        BattleState state,
+        IReadOnlyList<string> unitIds,
+        IReadOnlyList<double> amounts,
+        IReadOnlyList<string>? kinds = null) =>
+        ApplyUnitsChange(state, unitIds, amounts, kinds, ApplyMpChange);
+
+    private static void ApplyUnitsChange(
+        BattleState state,
+        IReadOnlyList<string> unitIds,
+        IReadOnlyList<double> amounts,
+        IReadOnlyList<string>? kinds,
+        Action<BattleUnit, double, string?> apply)
+    {
+        ArgumentNullException.ThrowIfNull(state);
+        ArgumentNullException.ThrowIfNull(unitIds);
+        ArgumentNullException.ThrowIfNull(amounts);
+        ArgumentNullException.ThrowIfNull(apply);
+        if (unitIds.Count != amounts.Count ||
+            kinds is not null && kinds.Count != unitIds.Count)
+        {
+            throw new ArgumentException(
+                $"Unit changes expect unitIds/amounts/kinds of equal length, got {unitIds.Count}/{amounts.Count}/{kinds?.Count.ToString() ?? "omitted"}.");
+        }
+
+        for (var index = 0; index < unitIds.Count; index++)
+        {
+            var unit = state.TryGetUnit(unitIds[index]);
+            if (unit is null)
+            {
+                var available = string.Join(", ", state.Units.Select(existing => existing.Id));
+                throw new InvalidOperationException(
+                    $"Battle unit '{unitIds[index]}' was not found. Available unit ids: {available}.");
+            }
+
+            apply(unit, amounts[index], kinds?[index]);
         }
     }
 
