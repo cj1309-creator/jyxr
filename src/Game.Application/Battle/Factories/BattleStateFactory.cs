@@ -9,7 +9,7 @@ namespace Game.Application;
 internal sealed class BattleStateFactory
 {
     private const int GridWidth = 11;
-    private const int GridHeight = 4;
+    private const int GridHeight = 6;
     private const int SpawnSearchRadius = 8;
     private readonly GameSession _session;
     private readonly ProceduralBattleCharacterFactory _characterFactory;

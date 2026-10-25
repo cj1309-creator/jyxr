@@ -12,6 +12,8 @@ public partial class BattleBoardView : Control
 	private const double FloatTextQueueInitialDelaySeconds = 0.1d;
 	private const double FloatTextQueueSpacingSeconds = 0.4d;
 	private const float FloatTextHeadOffsetY = 90f;
+	private const float PerspectiveTopScale = 0.8f;
+	private const float PerspectiveYSquash = 0.62f; //0.62
 	private static readonly Color BorderColor = new(0f, 0f, 0f, 0.45f);
 	private static readonly Color TextColor = Colors.White;
 
@@ -39,8 +41,80 @@ public partial class BattleBoardView : Control
 	private Node2D _combatantLayer = null!;
 	private Node2D _effectLayer = null!;
 	private bool _showBaseBoard = true;
+	private Vector2 _homePosition;
+	private ProjectiveMap _projection;
+	private float _boardRawWidth;
+	private float _boardRawHeight;
+	private bool _hasProjection;
 
 	private sealed record QueuedFloatText(string Text, BattleFloatTextStyle Style);
+
+	private readonly record struct ProjectiveMap(
+		float A, float B, float C,
+		float D, float E, float F,
+		float G, float H)
+	{
+		public static ProjectiveMap FromUnitSquare(Vector2 p0, Vector2 p1, Vector2 p2, Vector2 p3)
+		{
+			var dx1 = p1.X - p2.X;
+			var dx2 = p3.X - p2.X;
+			var dx3 = p0.X - p1.X + p2.X - p3.X;
+			var dy1 = p1.Y - p2.Y;
+			var dy2 = p3.Y - p2.Y;
+			var dy3 = p0.Y - p1.Y + p2.Y - p3.Y;
+
+			var denominator = dx1 * dy2 - dx2 * dy1;
+			if (Mathf.Abs(dx3) < 1e-6f && Mathf.Abs(dy3) < 1e-6f ||
+				Mathf.Abs(denominator) < 1e-6f)
+			{
+				return new ProjectiveMap(
+					p1.X - p0.X, p2.X - p1.X, p0.X,
+					p1.Y - p0.Y, p2.Y - p1.Y, p0.Y,
+					0f, 0f);
+			}
+
+			var g = (dx3 * dy2 - dx2 * dy3) / denominator;
+			var h = (dx1 * dy3 - dx3 * dy1) / denominator;
+			return new ProjectiveMap(
+				p1.X - p0.X + g * p1.X,
+				p3.X - p0.X + h * p3.X,
+				p0.X,
+				p1.Y - p0.Y + g * p1.Y,
+				p3.Y - p0.Y + h * p3.Y,
+				p0.Y,
+				g,
+				h);
+		}
+
+		public Vector2 Forward(float u, float v)
+		{
+			var w = G * u + H * v + 1f;
+			return new Vector2(
+				(A * u + B * v + C) / w,
+				(D * u + E * v + F) / w);
+		}
+
+		public bool TryInverse(Vector2 point, out Vector2 uv)
+		{
+			var m00 = A - point.X * G;
+			var m01 = B - point.X * H;
+			var m10 = D - point.Y * G;
+			var m11 = E - point.Y * H;
+			var determinant = m00 * m11 - m01 * m10;
+			if (Mathf.Abs(determinant) < 1e-6f)
+			{
+				uv = default;
+				return false;
+			}
+
+			var r0 = point.X - C;
+			var r1 = point.Y - F;
+			uv = new Vector2(
+				(r0 * m11 - m01 * r1) / determinant,
+				(m00 * r1 - r0 * m10) / determinant);
+			return true;
+		}
+	}
 
 	public event Action<GridPosition>? CellActivated;
 
@@ -71,6 +145,7 @@ public partial class BattleBoardView : Control
 	{
 		_combatantLayer = GetNode<Node2D>("%CombatantLayer");
 		_effectLayer = GetNode<Node2D>("%EffectLayer");
+		_homePosition = Position;
 	}
 
 	public void RenderGrid(
@@ -99,9 +174,19 @@ public partial class BattleBoardView : Control
 			_cells[cell.Position] = cell;
 		}
 
-		CustomMinimumSize = new Vector2(
-			_gridWidth * _cellWidth + Math.Max(0, _gridWidth - 1) * _cellGap,
-			_gridHeight * _cellHeight + Math.Max(0, _gridHeight - 1) * _cellGap);
+		var rawWidth = _gridWidth * _cellWidth + Math.Max(0, _gridWidth - 1) * _cellGap;
+		var rawHeight = _gridHeight * _cellHeight + Math.Max(0, _gridHeight - 1) * _cellGap;
+		var destinationHeight = rawHeight * PerspectiveYSquash;
+		var topInset = rawWidth * (1f - PerspectiveTopScale) * 0.5f;
+		_boardRawWidth = rawWidth;
+		_boardRawHeight = rawHeight;
+		_projection = ProjectiveMap.FromUnitSquare(
+			new Vector2(topInset, 0f),
+			new Vector2(rawWidth - topInset, 0f),
+			new Vector2(rawWidth, destinationHeight),
+			new Vector2(0f, destinationHeight));
+		_hasProjection = true;
+		CustomMinimumSize = new Vector2(rawWidth, destinationHeight);
 		QueueRedraw();
 	}
 
@@ -160,8 +245,18 @@ public partial class BattleBoardView : Control
 			return;
 		}
 
+		IReadOnlyList<GridPosition> positions = path;
+		if (mode == BattleMovementPresentationMode.Instant)
+		{
+			positions = [path[^1]];
+		}
+
+		var cameraTask = FocusAnchorAsync(
+			ResolveUnitAnchor(positions[^1]),
+			mode == BattleMovementPresentationMode.Instant ? 0d : StepMoveDurationSeconds * positions.Count);
+
 		unitView.PlayMoveLoop();
-		foreach (var position in mode == BattleMovementPresentationMode.Instant ? [path[^1]] : path)
+		foreach (var position in positions)
 		{
 			var targetPosition = ResolveUnitAnchor(position);
 			if (targetPosition.X < unitView.Position.X)
@@ -187,6 +282,7 @@ public partial class BattleBoardView : Control
 		}
 
 		unitView.PlayIdle();
+		await cameraTask;
 	}
 
 	private async Task TweenUnitPositionAsync(BattleUnitView unitView, Vector2 targetPosition, double durationSeconds)
@@ -196,6 +292,48 @@ public partial class BattleBoardView : Control
 			.SetTrans(Tween.TransitionType.Linear)
 			.SetEase(Tween.EaseType.InOut);
 		await ToSignal(tween, Tween.SignalName.Finished);
+	}
+
+	private async Task FocusAnchorAsync(Vector2 anchor, double durationSeconds)
+	{
+		var target = ResolveCameraPosition(anchor);
+		if (Position.IsEqualApprox(target))
+		{
+			return;
+		}
+
+		if (durationSeconds <= 0d)
+		{
+			Position = target;
+			return;
+		}
+
+		var tween = CreateTween();
+		tween.TweenProperty(this, "position", target, durationSeconds)
+			.SetTrans(Tween.TransitionType.Sine)
+			.SetEase(Tween.EaseType.InOut);
+		await ToSignal(tween, Tween.SignalName.Finished);
+	}
+
+	private Vector2 ResolveCameraPosition(Vector2 anchor)
+	{
+		var parent = GetParent() as Control;
+		var parentSize = parent is null ? GetViewportRect().Size : parent.Size;
+		var boardSize = CustomMinimumSize;
+
+		// 仅当棋盘在该轴溢出父区域时才跟随；否则保持初始位置，避免露出大片空白。
+		var targetX = boardSize.X > parentSize.X
+			? parentSize.X * 0.4f - anchor.X
+			: _homePosition.X;
+		var targetY = boardSize.Y > parentSize.Y
+			? parentSize.Y * 0.4f - anchor.Y
+			: _homePosition.Y;
+
+		var maxOffsetX = parentSize.X - boardSize.X;
+		var maxOffsetY = parentSize.Y - boardSize.Y;
+		return new Vector2(
+			Mathf.Clamp(targetX, Mathf.Min(0f, maxOffsetX), Mathf.Max(0f, maxOffsetX)),
+			Mathf.Clamp(targetY, Mathf.Min(0f, maxOffsetY), Mathf.Max(0f, maxOffsetY)));
 	}
 
 	private void SetPresentedUnitPosition(string unitId, GridPosition position)
@@ -350,16 +488,16 @@ public partial class BattleBoardView : Control
 					continue;
 				}
 
-				var rect = ResolveCellRect(position);
+				var quad = ResolveCellQuad(position);
 				if (_showBaseBoard || cell.HasOverlay)
 				{
-					DrawRect(rect, cell.Color);
+					DrawColoredPolygon(quad, cell.Color);
 				}
 
 				if (_showBaseBoard)
 				{
-					DrawRect(rect, BorderColor, false, 2f);
-					DrawCellText(font, rect, cell.Label);
+					//DrawPolyline([.. quad, quad[0]], BorderColor, 2f, antialiased: true);
+					DrawCellText(font, ResolveCellCenter(position), cell.Label);
 				}
 			}
 		}
@@ -419,25 +557,33 @@ public partial class BattleBoardView : Control
 
 	private bool TryGetCellAt(Vector2 point, out GridPosition position)
 	{
-		if (_cellWidth <= 0 || _cellHeight <= 0)
+		if (!_hasProjection || _cellWidth <= 0 || _cellHeight <= 0)
 		{
 			position = default;
 			return false;
 		}
 
+		if (!_projection.TryInverse(point, out var uv))
+		{
+			position = default;
+			return false;
+		}
+
+		var gridX = uv.X * _boardRawWidth;
+		var gridY = uv.Y * _boardRawHeight;
 		var strideX = _cellWidth + _cellGap;
 		var strideY = _cellHeight + _cellGap;
-		var x = Mathf.FloorToInt(point.X / strideX);
-		var y = Mathf.FloorToInt(point.Y / strideY);
+		var x = Mathf.FloorToInt(gridX / strideX);
+		var y = Mathf.FloorToInt(gridY / strideY);
 		if (x < 0 || x >= _gridWidth || y < 0 || y >= _gridHeight)
 		{
 			position = default;
 			return false;
 		}
 
-		var localX = point.X - x * strideX;
-		var localY = point.Y - y * strideY;
-		if (localX > _cellWidth || localY > _cellHeight)
+		var localX = gridX - x * strideX;
+		var localY = gridY - y * strideY;
+		if (localX < 0 || localX > _cellWidth || localY < 0 || localY > _cellHeight)
 		{
 			position = default;
 			return false;
@@ -447,20 +593,33 @@ public partial class BattleBoardView : Control
 		return true;
 	}
 
-	private Rect2 ResolveCellRect(GridPosition position) =>
-		new(
-			position.X * (_cellWidth + _cellGap),
-			position.Y * (_cellHeight + _cellGap),
-			_cellWidth,
-			_cellHeight);
-
-	private Vector2 ResolveUnitAnchor(GridPosition position)
+	private Vector2 ProjectBoardPoint(float gridX, float gridY)
 	{
-		var rect = ResolveCellRect(position);
-		return new Vector2(
-			rect.Position.X + rect.Size.X * 0.5f,
-			rect.Position.Y + rect.Size.Y * 0.5f);
+		if (!_hasProjection || _boardRawWidth <= 0f || _boardRawHeight <= 0f)
+		{
+			return new Vector2(gridX, gridY);
+		}
+
+		return _projection.Forward(gridX / _boardRawWidth, gridY / _boardRawHeight);
 	}
+
+	private Vector2 ResolveCellCorner(GridPosition position, float u, float v) =>
+		ProjectBoardPoint(
+			position.X * (_cellWidth + _cellGap) + u * _cellWidth,
+			position.Y * (_cellHeight + _cellGap) + v * _cellHeight);
+
+	private Vector2[] ResolveCellQuad(GridPosition position) =>
+	[
+		ResolveCellCorner(position, 0f, 0f),
+		ResolveCellCorner(position, 1f, 0f),
+		ResolveCellCorner(position, 1f, 1f),
+		ResolveCellCorner(position, 0f, 1f),
+	];
+
+	private Vector2 ResolveCellCenter(GridPosition position) =>
+		ResolveCellCorner(position, 0.5f, 0.5f);
+
+	private Vector2 ResolveUnitAnchor(GridPosition position) => ResolveCellCenter(position);
 
 	private BattleUnitView GetOrCreateUnitView(string unitId)
 	{
@@ -545,7 +704,7 @@ public partial class BattleBoardView : Control
 		}
 	}
 
-	private void DrawCellText(Font font, Rect2 rect, string text)
+	private void DrawCellText(Font font, Vector2 center, string text)
 	{
 		if (string.IsNullOrWhiteSpace(text))
 		{
@@ -560,12 +719,12 @@ public partial class BattleBoardView : Control
 
 		var lineHeight = CellTextFontSize + 6f;
 		var totalHeight = lines.Length * lineHeight;
-		var startY = rect.Position.Y + (rect.Size.Y - totalHeight) * 0.5f + CellTextFontSize;
+		var startY = center.Y - totalHeight * 0.5f + CellTextFontSize;
 		for (var index = 0; index < lines.Length; index++)
 		{
 			var line = lines[index];
 			var size = font.GetStringSize(line, HorizontalAlignment.Left, -1, CellTextFontSize);
-			var x = rect.Position.X + (rect.Size.X - size.X) * 0.5f;
+			var x = center.X - size.X * 0.5f;
 			var y = startY + index * lineHeight;
 			DrawString(font, new Vector2(x, y), line, HorizontalAlignment.Left, -1, CellTextFontSize, TextColor);
 		}
