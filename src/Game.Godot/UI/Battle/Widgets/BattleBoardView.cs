@@ -13,7 +13,8 @@ public partial class BattleBoardView : Control
 	private const double FloatTextQueueSpacingSeconds = 0.4d;
 	private const float FloatTextHeadOffsetY = 90f;
 	private const float PerspectiveTopScale = 0.8f;
-	private const float PerspectiveYSquash = 0.62f; //0.62
+	private const float PerspectiveYSquash = 0.62f;
+	private const float CameraFollowBand = 40f;
 	private static readonly Color BorderColor = new(0f, 0f, 0f, 0.45f);
 	private static readonly Color TextColor = Colors.White;
 
@@ -46,6 +47,7 @@ public partial class BattleBoardView : Control
 	private float _boardRawWidth;
 	private float _boardRawHeight;
 	private bool _hasProjection;
+
 
 	private sealed record QueuedFloatText(string Text, BattleFloatTextStyle Style);
 
@@ -123,6 +125,10 @@ public partial class BattleBoardView : Control
 	public event Action<GridPosition?>? HoveredCellChanged;
 
 	public event Action? UnitPresentationPositionChanged;
+
+	public event Action<BattleBoardUnitVisual>? UnitHoverEntered;
+
+	public event Action? UnitHoverExited;
 
 	public IReadOnlyDictionary<string, GridPosition> PresentedUnitPositions => _presentedUnitPositions;
 
@@ -202,7 +208,7 @@ public partial class BattleBoardView : Control
 			var isExistingView = _unitViews.TryGetValue(unit.UnitId, out var unitView);
 			unitView ??= GetOrCreateUnitView(unit.UnitId);
 			unitView.Configure(unit);
-
+            
 			var targetPosition = ResolveUnitAnchor(unit.Position);
 			if (!isExistingView)
 			{
@@ -321,13 +327,16 @@ public partial class BattleBoardView : Control
 		var parentSize = parent is null ? GetViewportRect().Size : parent.Size;
 		var boardSize = CustomMinimumSize;
 
-		// 仅当棋盘在该轴溢出父区域时才跟随；否则保持初始位置，避免露出大片空白。
+		var idealX = parentSize.X * 0.4f - anchor.X;
+		var idealY = parentSize.Y * 0.4f - anchor.Y;
+
+		// 棋盘放得下时只在初始位置附近小范围跟随；溢出时整轴跟随。
 		var targetX = boardSize.X > parentSize.X
-			? parentSize.X * 0.4f - anchor.X
-			: _homePosition.X;
+			? idealX
+			: Mathf.Clamp(idealX, _homePosition.X - CameraFollowBand, _homePosition.X + CameraFollowBand);
 		var targetY = boardSize.Y > parentSize.Y
-			? parentSize.Y * 0.4f - anchor.Y
-			: _homePosition.Y;
+			? idealY
+			: Mathf.Clamp(idealY, _homePosition.Y - CameraFollowBand, _homePosition.Y + CameraFollowBand);
 
 		var maxOffsetX = parentSize.X - boardSize.X;
 		var maxOffsetY = parentSize.Y - boardSize.Y;
@@ -364,6 +373,37 @@ public partial class BattleBoardView : Control
 		if (_unitViews.TryGetValue(unitId, out var unitView))
 		{
 			unitView.PlayHit();
+		}
+	}
+
+	public double GetUnitAnimationLength(string unitId, string animationName)
+	{
+		ArgumentException.ThrowIfNullOrWhiteSpace(unitId);
+		ArgumentException.ThrowIfNullOrWhiteSpace(animationName);
+
+		return _unitViews.TryGetValue(unitId, out var unitView)
+			? unitView.GetAnimationLength(animationName)
+			: 0d;
+	}
+
+	public void PlayHitFlash(string unitId, double durationSeconds)
+	{
+		ArgumentException.ThrowIfNullOrWhiteSpace(unitId);
+
+		if (_unitViews.TryGetValue(unitId, out var unitView))
+		{
+			unitView.PlayHitFlash(durationSeconds);
+		}
+	}
+
+	public void StopAllHitFlashes()
+	{
+		foreach (var unitView in _unitViews.Values)
+		{
+			if (GodotObject.IsInstanceValid(unitView))
+			{
+				unitView.StopHitFlash();
+			}
 		}
 	}
 
@@ -641,9 +681,19 @@ public partial class BattleBoardView : Control
 		}
 
 		unitView.Name = $"Unit_{unitId}";
+		unitView.HoverEntered += OnUnitViewHoverEntered;
+		unitView.HoverExited += _ => UnitHoverExited?.Invoke();
 		_combatantLayer.AddChild(unitView);
 		_unitViews[unitId] = unitView;
 		return unitView;
+	}
+
+	private void OnUnitViewHoverEntered(BattleUnitView unitView)
+	{
+		if (unitView.Unit is { } unit)
+		{
+			UnitHoverEntered?.Invoke(unit);
+		}
 	}
 
 	private void PlayFloatTextAt(Vector2 position, string text, BattleFloatTextStyle style, bool popup = false)

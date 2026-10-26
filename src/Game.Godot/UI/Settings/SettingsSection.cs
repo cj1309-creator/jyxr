@@ -37,12 +37,16 @@ public partial class SettingsSection : Control
 	private CheckBox _musicCheckBox = null!;
 	private CheckBox _sfxCheckBox = null!;
 	private IDisposable? _adventureStateSubscription;
+    private CheckBox _showBuffListCheckBox = null!;
+    private CheckBox _showUnitNameCheckBox = null!;
 
-	public override void _Ready()
+    public override void _Ready()
 	{
 		_showBattleBoardCheckBox = GetNode<CheckBox>("%ShowBattleBoardCheckBox");
 		_showBattleHpCheckBox = GetNode<CheckBox>("%ShowBattleHpCheckBox");
-		_autoSaveCheckBox = GetNode<CheckBox>("%AutoSaveCheckBox");
+        _showBuffListCheckBox = GetNode<CheckBox>("%ShowBuffListCheckBox");
+        _showUnitNameCheckBox = GetNode<CheckBox>("%ShowUnitNameCheckBox");
+        _autoSaveCheckBox = GetNode<CheckBox>("%AutoSaveCheckBox");
 		_largeMapMovementAnimationCheckBox = GetNode<CheckBox>("%LargeMapMovementAnimationCheckBox");
 		_autoBattleCheckBox = GetNode<CheckBox>("%AutoBattleCheckBox");
 		_battleSpeedUpCheckBox = GetNode<CheckBox>("%BattleSpeedUpCheckBox");
@@ -57,7 +61,10 @@ public partial class SettingsSection : Control
 
 		_showBattleBoardCheckBox.Toggled += _ => UpdateSettings("战斗棋盘显示");
 		_showBattleHpCheckBox.Toggled += _ => UpdateSettings("战斗血条显示");
-		_autoSaveCheckBox.Toggled += _ => UpdateSettings("自动存档");
+		_showBuffListCheckBox.Toggled += _ => UpdateSettings("战斗buff列表显示");
+        _showUnitNameCheckBox.Toggled += _ => UpdateSettings("战斗单位名字显示");
+
+        _autoSaveCheckBox.Toggled += _ => UpdateSettings("自动存档");
 		_largeMapMovementAnimationCheckBox.Toggled += _ => UpdateSettings("大地图移动动画");
 		_autoBattleCheckBox.Toggled += _ => UpdateSettings("自动战斗");
 		_battleSpeedUpCheckBox.Toggled += _ => UpdateSettings("战斗加速");

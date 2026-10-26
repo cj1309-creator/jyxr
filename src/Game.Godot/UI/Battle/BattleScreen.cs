@@ -59,6 +59,7 @@ public partial class BattleScreen : Control
 	private BaseButton _autoBattleButton = null!;
 	private CanvasItem _autoBattleActive = null!;
 	private BattleBoardView _boardGrid = null!;
+	private BattleUnitStateTip _unitStateTip = null!;
 	private BattleSelectedSkillBox _selectedSkillBox = null!;
 	private BaseButton _moveButton = null!;
 	private BaseButton _statusButton = null!;
@@ -85,6 +86,7 @@ public partial class BattleScreen : Control
 		_autoBattleButton = GetNode<BaseButton>("%AutoBattleButton");
 		_autoBattleActive = GetNode<CanvasItem>("%AutoBattleActive");
 		_boardGrid = GetNode<BattleBoardView>("%BoardGrid");
+		_unitStateTip = GetNode<BattleUnitStateTip>("%BattleUnitStateTip");
 		_selectedSkillBox = GetNode<BattleSelectedSkillBox>("%BattleSelectedSkillBox");
 		_actionDrawer = GetNode<BattleActionDrawer>("%BattleActionDrawer");
 		_moveButton = _actionDrawer.MoveButton;
@@ -156,6 +158,8 @@ public partial class BattleScreen : Control
 		_boardGrid.HoveredCellChanged += position => DispatchIntent(new BattleUiIntent.HoverCell(position));
 		_boardGrid.BackRequested += () => DispatchIntent(new BattleUiIntent.Back());
 		_boardGrid.UnitPresentationPositionChanged += RefreshBoardForPresentedUnitPosition;
+		_boardGrid.UnitHoverEntered += ShowUnitStateTip;
+		_boardGrid.UnitHoverExited += _unitStateTip.Hide;
 		_speedUpButton.Pressed += _settingsController.ToggleSpeedUp;
 		_autoBattleButton.Pressed += () => DispatchIntent(new BattleUiIntent.ToggleAutoBattle());
 		_actionPanelController.BindButtons();
@@ -375,6 +379,12 @@ public partial class BattleScreen : Control
 		{
 			_boardController.RenderInteraction(_interaction);
 		}
+	}
+
+	private void ShowUnitStateTip(BattleBoardUnitVisual unit)
+	{
+		_unitStateTip.Configure(unit);
+		_unitStateTip.Show();
 	}
 
 	private async Task ObserveIntentAsync(Task task)

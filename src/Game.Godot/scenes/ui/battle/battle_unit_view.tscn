@@ -2,7 +2,7 @@
 
 [ext_resource type="Script" uid="uid://bhwyiutc87gtc" path="res://UI/Battle/Widgets/BattleUnitView.cs" id="1_script"]
 [ext_resource type="AnimationLibrary" uid="uid://bbw02vxa8nxa6" path="res://assets/animation/combatant/zyjk.tres" id="3_p1k0d"]
-[ext_resource type="Texture2D" path="res://assets/art/atlas_texture/zyjk/zyjk-stand009.tres" id="4_0y46n"]
+[ext_resource type="Texture2D" path="res://assets/art/atlas_texture/zyjk/zyjk-attack001.tres" id="4_0y46n"]
 [ext_resource type="Texture2D" uid="uid://cs45878e3n7p6" path="res://assets/art/ui/battle/yinyingxiao.png" id="4_shadow"]
 [ext_resource type="Texture2D" uid="uid://ctf1yvtn7ngc1" path="res://assets/art/ui/battle/arrow.png" id="5_arrow"]
 [ext_resource type="Texture2D" uid="uid://b3pmv2oib5y05" path="res://assets/art/ui/battle/battle_duihuakuang.png" id="6_speech_bg"]
@@ -144,6 +144,7 @@ mouse_filter = 2
 
 [node name="RagePips" type="VBoxContainer" parent="Overlay" unique_id=2091548818]
 unique_name_in_owner = true
+visible = false
 custom_minimum_size = Vector2(0, 7)
 layout_mode = 0
 offset_left = 112.0
@@ -192,6 +193,7 @@ color = Color(1, 0.78, 0.1, 1)
 
 [node name="NameLabel" type="Label" parent="Overlay" unique_id=1407938241]
 unique_name_in_owner = true
+visible = false
 layout_mode = 0
 offset_top = 12.0
 offset_right = 120.0
@@ -248,6 +250,7 @@ label_settings = SubResource("6_speech_label")
 autowrap_mode = 2
 
 [node name="VBoxContainer" type="VBoxContainer" parent="Overlay" unique_id=792659433]
+visible = false
 layout_mode = 0
 offset_top = 233.0
 offset_right = 120.0
@@ -285,6 +288,7 @@ show_percentage = false
 
 [node name="BuffListLabel" type="RichTextLabel" parent="Overlay" unique_id=1802403301]
 unique_name_in_owner = true
+visible = false
 layout_mode = 0
 offset_left = -105.0
 offset_top = 52.0
@@ -312,7 +316,7 @@ scale = Vector2(1.5, 1.5)
 unique_name_in_owner = true
 texture = ExtResource("4_0y46n")
 centered = false
-offset = Vector2(-28.952295, -115.923874)
+offset = Vector2(-28.952295, -115.97324)
 
 [node name="AnimationPlayer" type="AnimationPlayer" parent="AnimationSlot" unique_id=74145691]
 unique_name_in_owner = true
@@ -329,7 +333,7 @@ anim_player = NodePath("../AnimationPlayer")
 unique_name_in_owner = true
 visible = false
 z_index = 2
-position = Vector2(0, -170)
+position = Vector2(0, -250)
 scale = Vector2(0.07, 0.07)
 texture = ExtResource("5_arrow")
 

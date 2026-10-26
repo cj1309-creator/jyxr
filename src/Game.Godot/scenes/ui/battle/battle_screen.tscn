@@ -8,6 +8,7 @@
 [ext_resource type="PackedScene" uid="uid://cstdi8n6cph7k" path="res://scenes/ui/battle/battle_skill_box.tscn" id="18_skill_box"]
 [ext_resource type="PackedScene" uid="uid://d1qdddofh12io" path="res://scenes/ui/battle/battle_board_view.tscn" id="19_board_view"]
 [ext_resource type="PackedScene" uid="uid://oei4u3648ovq" path="res://scenes/ui/battle/battle_item_panel.tscn" id="20_item_panel"]
+[ext_resource type="PackedScene" uid="uid://dubnxa1yfsudm" path="res://scenes/ui/battle/battle_unitstate_tip.tscn" id="20_mja3t"]
 [ext_resource type="PackedScene" uid="uid://b77m8rj4t6o0x" path="res://scenes/ui/battle/battle_legend_overlay.tscn" id="21_legend_overlay"]
 [ext_resource type="Texture2D" uid="uid://cy8b0ml1bq8e0" path="res://assets/art/ui/battle/battle_jiasu.png" id="22_speed_button"]
 [ext_resource type="Texture2D" uid="uid://ck4dvgt1nywut" path="res://assets/art/ui/battle/battle_jiasuhong.png" id="23_speed_active"]
@@ -305,3 +306,12 @@ anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
 mouse_filter = 2
+
+[node name="BattleUnitStateTip" parent="BattleUiRoot" unique_id=141083176 instance=ExtResource("20_mja3t")]
+unique_name_in_owner = true
+visible = false
+layout_mode = 1
+offset_left = 74.0
+offset_top = 796.0
+offset_right = -1465.0
+offset_bottom = -1.0
