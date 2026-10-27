@@ -13,6 +13,8 @@ public partial class BattleUnitView : Node2D
 	private static readonly Color GaugeBarColor = new(0.95f, 0.95f, 0.95f, 1f);
 	private static readonly Color RagePipColor = new(1f, 0.78f, 0.1f, 1f);
 	private static readonly Color EnemyNameColor = Colors.Red;
+	private static readonly Color HitFlashColor = new(1f, 0.35f, 0.35f, 1f);
+	private const double HitFlashIntervalSeconds = 0.06d;
 
 	private Sprite2D _sprite = null!;
 	private Sprite2D _activeArrow = null!;
@@ -32,8 +34,16 @@ public partial class BattleUnitView : Node2D
 	private Label _speechLabel = null!;
 	private Texture2D? _portraitTexture;
 	private ulong _speechSerial;
+	private ulong _flashSerial;
+	private bool _hovered;
+
+	public event Action<BattleUnitView>? HoverEntered;
+
+	public event Action<BattleUnitView>? HoverExited;
 
 	public string UnitId { get; private set; } = string.Empty;
+
+	public BattleBoardUnitVisual? Unit { get; private set; }
 
 	public override void _Ready()
 	{
@@ -43,6 +53,8 @@ public partial class BattleUnitView : Node2D
 		_animationTree = GetNode<AnimationTree>("%AnimationTree");
 		_stateMachine = _animationTree.Get("parameters/playback").As<AnimationNodeStateMachinePlayback>();
 		_tooltipHitArea = GetNode<Control>("%TooltipHitArea");
+		_tooltipHitArea.MouseEntered += OnTooltipAreaMouseEntered;
+		_tooltipHitArea.MouseExited += OnTooltipAreaMouseExited;
 		_nameLabel = GetNode<Label>("%NameLabel");
 		_buffListLabel = GetNode<RichTextLabel>("%BuffListLabel");
 		_hpBar = GetNode<ProgressBar>("%HpBar");
@@ -59,6 +71,7 @@ public partial class BattleUnitView : Node2D
 	{
 		ArgumentNullException.ThrowIfNull(unit);
 
+		Unit = unit;
 		UnitId = unit.UnitId;
 		SetAnimationSet(unit.AnimationLibrary);
 		SetFacing(unit.Facing);
@@ -71,10 +84,42 @@ public partial class BattleUnitView : Node2D
 		UpdateBar(_gaugeBar, unit.ActionGauge, 100, GaugeBarColor);
 		UpdateRagePips(unit.Rage);
 		UpdateBuffList(unit.Buffs);
-		_tooltipHitArea.TooltipText = $"生命 {unit.Hp}/{unit.MaxHp}\n内力 {unit.Mp}/{unit.MaxMp}\n怒气 {unit.Rage}/{BattleUnit.MaxRage}";
+
 		_activeArrow.Visible = unit.IsActing;
 		Visible = unit.IsAlive;
 		Modulate = Colors.White;
+		if (!Visible)
+		{
+			OnTooltipAreaMouseExited();
+		}
+	}
+
+	public override void _ExitTree()
+	{
+		OnTooltipAreaMouseExited();
+		base._ExitTree();
+	}
+
+	private void OnTooltipAreaMouseEntered()
+	{
+		if (_hovered)
+		{
+			return;
+		}
+
+		_hovered = true;
+		HoverEntered?.Invoke(this);
+	}
+
+	private void OnTooltipAreaMouseExited()
+	{
+		if (!_hovered)
+		{
+			return;
+		}
+
+		_hovered = false;
+		HoverExited?.Invoke(this);
 	}
 
 	public async void ShowSpeech(string text)
@@ -113,6 +158,50 @@ public partial class BattleUnitView : Node2D
 	{
 		TravelAnimation("hit");
 		completed?.Invoke();
+	}
+
+	public double GetAnimationLength(string animationName)
+	{
+		ArgumentException.ThrowIfNullOrWhiteSpace(animationName);
+		var animation = _animationPlayer.GetAnimation(new StringName(animationName));
+		return animation?.Length ?? 0d;
+	}
+
+	public async void PlayHitFlash(double durationSeconds)
+	{
+		if (durationSeconds <= 0d || !IsInsideTree())
+		{
+			return;
+		}
+
+		var serial = ++_flashSerial;
+		var remainingSeconds = durationSeconds;
+		var flashOn = false;
+		while (serial == _flashSerial &&
+			GodotObject.IsInstanceValid(this) &&
+			remainingSeconds > 0d)
+		{
+			flashOn = !flashOn;
+			_sprite.SelfModulate = flashOn ? HitFlashColor : Colors.White;
+
+			var waitSeconds = Math.Min(HitFlashIntervalSeconds, remainingSeconds);
+			remainingSeconds -= waitSeconds;
+			await ToSignal(GetTree().CreateTimer(waitSeconds), SceneTreeTimer.SignalName.Timeout);
+		}
+
+		if (serial == _flashSerial && GodotObject.IsInstanceValid(this))
+		{
+			_sprite.SelfModulate = Colors.White;
+		}
+	}
+
+	public void StopHitFlash()
+	{
+		_flashSerial++;
+		if (GodotObject.IsInstanceValid(this))
+		{
+			_sprite.SelfModulate = Colors.White;
+		}
 	}
 
 	public void ApplyFacing(BattleFacing facing)

@@ -40,7 +40,11 @@ internal sealed class BattleSkillPresentationController(
             case BattleCue { Kind: BattleCueKind.SpeechRequested } cue:
                 presentation.EnqueueImpact(() => eventPresenter().PresentImmediate(cue));
                 return true;
-            case BattleFact { Kind: BattleFactKind.Damaged or BattleFactKind.BuffApplied or
+            case BattleFact { Kind: BattleFactKind.Damaged } fact:
+                presentation.EnqueueImpactFloat(() => eventPresenter().PresentImmediate(fact));
+                presentation.EnqueueImpact(() => _board.PlayHitFlash(fact.UnitId, presentation.GetRemainingAttackFlashDuration()));
+                return true;
+            case BattleFact { Kind: BattleFactKind.BuffApplied or
                 BattleFactKind.BuffResisted or BattleFactKind.BuffRemoved or BattleFactKind.BuffReduced or BattleFactKind.Healed or
                 BattleFactKind.Lifesteal or BattleFactKind.MpDamaged or BattleFactKind.MpRecovered or BattleFactKind.ActionGaugeChanged or
                 BattleFactKind.SkillCooldownsReset or
@@ -87,6 +91,7 @@ internal sealed class BattleSkillPresentationController(
         try { await presentationTask; }
         finally
         {
+            _board.StopAllHitFlashes();
             _active = null;
         }
     }
@@ -117,11 +122,26 @@ internal sealed class BattleSkillPresentationController(
         private readonly List<Action> _skillNameActions = [];
         private readonly List<Action> _impactActions = [];
         private readonly List<Action> _impactFloatActions = [];
+        private double _attackLength;
+        private ulong _attackStartedAtMsec;
         public string ActingUnitId { get; } = actingUnitId;
         public BattleSkillCastInfo SkillCast { get; } = skillCast;
         public void EnqueueSkillName(Action action) => _skillNameActions.Add(action);
         public void EnqueueImpact(Action action) => _impactActions.Add(action);
         public void EnqueueImpactFloat(Action action) => _impactFloatActions.Add(action);
+
+        public double GetRemainingAttackFlashDuration()
+        {
+            if (_attackLength <= 0d)
+            {
+                return SkillImpactDelay;
+            }
+
+            // Time.GetTicksMsec 是真实时间，而动画/计时器受 Engine.TimeScale 缩放。
+            var timeScale = Math.Max(0.01d, Engine.TimeScale);
+            var elapsedGameSeconds = (Time.GetTicksMsec() - _attackStartedAtMsec) / 1000d / timeScale;
+            return Math.Max(0d, _attackLength - elapsedGameSeconds);
+        }
 
         public async Task RunAsync()
         {
@@ -131,6 +151,9 @@ internal sealed class BattleSkillPresentationController(
                 if (!string.IsNullOrWhiteSpace(SkillCast.ScreenEffectAnimationId))
                     await controller.ShowLegendOverlayAsync(actingUnitName, portrait, SkillCast);
             }
+
+            _attackLength = controller._board.GetUnitAnimationLength(ActingUnitId, "attack");
+            _attackStartedAtMsec = Time.GetTicksMsec();
             controller._board.PlayAttack(ActingUnitId);
             await controller.WaitAsync(SkillNameDelay);
             Flush(_skillNameActions);

@@ -16,10 +16,10 @@ EquipmentSelectionPanelScene = ExtResource("7_selection_panel")
 
 [node name="HBoxContainer" type="HBoxContainer" parent="." unique_id=1750653590]
 layout_mode = 0
-offset_left = 236.0
-offset_top = 120.0
-offset_right = 936.0
-offset_bottom = 320.0
+offset_left = 39.0
+offset_top = 440.0
+offset_right = 739.0
+offset_bottom = 640.0
 theme_override_constants/separation = 50
 
 [node name="WeaponSlot" parent="HBoxContainer" unique_id=663832615 instance=ExtResource("6_slot_button")]

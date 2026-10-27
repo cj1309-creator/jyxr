@@ -102,7 +102,6 @@ text = "战斗棋盘显示"
 
 [node name="ShowBattleHpCheckBox" type="CheckBox" parent="CombatCard/CombatContent" unique_id=2119836096]
 unique_name_in_owner = true
-visible = false
 custom_minimum_size = Vector2(0, 66)
 layout_mode = 2
 theme_override_font_sizes/font_size = 36
@@ -151,6 +150,16 @@ layout_mode = 2
 theme_override_font_sizes/font_size = 32
 text = "2倍"
 vertical_alignment = 1
+
+[node name="ShowBuffListCheckBox" type="CheckBox" parent="CombatCard/CombatContent" unique_id=1836751594]
+layout_mode = 2
+theme_override_font_sizes/font_size = 36
+text = "战斗buff列表显示"
+
+[node name="ShowUnitNameCheckBox" type="CheckBox" parent="CombatCard/CombatContent" unique_id=1906327280]
+layout_mode = 2
+theme_override_font_sizes/font_size = 36
+text = "战斗单位名字显示"
 
 [node name="ExperienceCard" type="PanelContainer" parent="." unique_id=481278222]
 layout_mode = 0

@@ -60,7 +60,7 @@ public partial class HudPanel : Control
 
 	private void OnHeroButtonPressed() => UIRoot.Instance.ShowHeroPanel();
 
-	private void OnTeamButtonPressed() => UIRoot.Instance.ShowPartyPanel();
+	private void OnTeamButtonPressed() => OnTeamButton();
 
 	private static string ResolveCurrentMapName()
 	{
@@ -86,8 +86,13 @@ public partial class HudPanel : Control
 			? null
 			: AssetResolver.LoadTexture(hero.Portrait);
 	}
+    private void OnTeamButton()
+    {
 
-	private static CharacterInstance? TryGetHero()
+		UIRoot.Instance.ShowCharacterPartyPanel("主角","party");
+    }
+
+    private static CharacterInstance? TryGetHero()
 	{
 		var party = Game.State.Party;
 		if (party.TryGetMember(PartyAccess.HeroCharacterId, out var hero))
