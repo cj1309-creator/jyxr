@@ -159,7 +159,7 @@ public partial class BattleScreen : Control
 		_boardGrid.BackRequested += () => DispatchIntent(new BattleUiIntent.Back());
 		_boardGrid.UnitPresentationPositionChanged += RefreshBoardForPresentedUnitPosition;
 		_boardGrid.UnitHoverEntered += ShowUnitStateTip;
-		_boardGrid.UnitHoverExited += _unitStateTip.Hide;
+		_boardGrid.UnitHoverExited += HideUnitStateTip;
 		_speedUpButton.Pressed += _settingsController.ToggleSpeedUp;
 		_autoBattleButton.Pressed += () => DispatchIntent(new BattleUiIntent.ToggleAutoBattle());
 		_actionPanelController.BindButtons();
@@ -385,9 +385,19 @@ public partial class BattleScreen : Control
 	{
 		_unitStateTip.Configure(unit);
 		_unitStateTip.Show();
-	}
+		_selectedSkillBox.Hide();
+        _listContainer.Hide();
 
-	private async Task ObserveIntentAsync(Task task)
+    }
+
+    private void HideUnitStateTip()
+    {
+		_unitStateTip.Hide();
+        _selectedSkillBox.Show();
+        _listContainer.Show();
+    }
+
+    private async Task ObserveIntentAsync(Task task)
 	{
 		try
 		{

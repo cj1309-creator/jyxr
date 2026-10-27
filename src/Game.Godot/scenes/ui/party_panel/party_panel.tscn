@@ -9,13 +9,19 @@
 script = ExtResource("2_dov0m")
 PartyCharacterBoxScene = ExtResource("3_box")
 
+[node name="Panel" parent="." index="0" unique_id=1227475098]
+visible = false
+
+[node name="Background" parent="." index="1" unique_id=2084013287]
+texture = null
+
 [node name="ScrollContainer" type="ScrollContainer" parent="ContentRoot" parent_id_path=PackedInt32Array(196658441) index="0" unique_id=1113950281]
 unique_name_in_owner = true
 layout_mode = 1
 offset_left = 192.0
-offset_top = 144.0
+offset_top = 236.0
 offset_right = 1677.0
-offset_bottom = 885.0
+offset_bottom = 977.0
 
 [node name="GridContainer" type="GridContainer" parent="ContentRoot/ScrollContainer" index="0" unique_id=199504820]
 unique_name_in_owner = true
@@ -31,12 +37,11 @@ layout_mode = 2
 unique_name_in_owner = true
 visible = false
 clip_contents = true
-layout_mode = 0
+anchors_preset = 0
 offset_left = 192.0
 offset_top = 144.0
 offset_right = 1677.0
 offset_bottom = 885.0
-mouse_filter = 0
 script = ExtResource("4_drop")
 
 [node name="InsertionIndicator" type="ColorRect" parent="ContentRoot/DragOverlay" index="0" unique_id=100000002]
@@ -71,5 +76,10 @@ offset_right = 1200.0
 offset_bottom = 226.0
 theme_override_font_sizes/font_size = 26
 text = "当前没有队伍成员。"
+
+[node name="CloseButton" parent="." index="3" unique_id=962603895]
+visible = false
+PressOffset = Vector2(2, 2)
+PressColor = Color(0.8, 0.8, 0.8, 1)
 
 [connection signal="pressed" from="CloseButton" to="." method="_on_close_button_pressed"]

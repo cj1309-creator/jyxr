@@ -16,20 +16,20 @@ TalentBoxScene = ExtResource("2_talent_box")
 [node name="PointLabel" type="Label" parent="." unique_id=1859793427]
 unique_name_in_owner = true
 layout_mode = 0
-offset_left = 8.0
-offset_top = -20.0
-offset_right = 428.0
-offset_bottom = 51.0
+offset_left = 26.0
+offset_top = 273.0
+offset_right = 446.0
+offset_bottom = 344.0
 theme_override_colors/font_color = Color(0, 0, 0, 1)
 theme_override_font_sizes/font_size = 60
 text = "武学常识 0/50"
 
 [node name="ScrollContainer" type="ScrollContainer" parent="." unique_id=1826043446]
 layout_mode = 0
-offset_left = 11.0
-offset_top = 45.0
-offset_right = 1161.0
-offset_bottom = 495.0
+offset_left = 17.0
+offset_top = 379.0
+offset_right = 1167.0
+offset_bottom = 829.0
 
 [node name="TalentContainer" type="VBoxContainer" parent="ScrollContainer" unique_id=105579076]
 unique_name_in_owner = true

@@ -34,8 +34,9 @@ public partial class CharacterRosterPanel : Control
 		_subscriptions.Add(Game.Session.Events.Subscribe<PartyChangedEvent>(_ => Render()));
 		_subscriptions.Add(Game.Session.Events.Subscribe<CharacterChangedEvent>(_ => Render()));
 		_subscriptions.Add(Game.Session.Events.Subscribe<SaveLoadedEvent>(_ => Render()));
+		
 
-		if (!string.IsNullOrWhiteSpace(CharacterId))
+        if (!string.IsNullOrWhiteSpace(CharacterId))
 		{
 			Render();
 		}
@@ -97,8 +98,12 @@ public partial class CharacterRosterPanel : Control
 		button.CharacterSelected += SelectCharacter;
 		return button;
 	}
+	public void ShowPartyButton() => _characterPanel.ShowPartyButton(6);
 
-	private void SelectCharacter(string characterId)
+    public void ShowRosterButton() => _characterPanel.ShowRosterButton(0);
+
+
+    private void SelectCharacter(string characterId)
 	{
 		if (string.Equals(CharacterId, characterId, StringComparison.Ordinal))
 		{

@@ -17,6 +17,7 @@ public partial class BattleUnitStateTip : Control
     private ProgressBar _hpBar = null!;
     private ProgressBar _mpBar = null!;
     private ProgressBar _gaugeBar = null!;
+    private RichTextLabel _buffListLabel = null!;
     public string UnitId { get; private set; } = string.Empty;
     public override void _Ready()
 	{
@@ -25,6 +26,7 @@ public partial class BattleUnitStateTip : Control
         _hpBar = GetNode<ProgressBar>("%HpBar");
         _mpBar = GetNode<ProgressBar>("%MpBar");
         _gaugeBar = GetNode<ProgressBar>("%GaugeBar");
+        _buffListLabel = GetNode<RichTextLabel>("%BuffListLabel");
 
     }
     public void Configure(BattleBoardUnitVisual unit)
@@ -38,8 +40,10 @@ public partial class BattleUnitStateTip : Control
         UpdateBar(_hpBar, unit.Hp, unit.MaxHp, unit.IsPlayerUnit ? PlayerBarColor : EnemyBarColor);
         UpdateBar(_mpBar, unit.Mp, unit.MaxMp, ManaBarColor);
         UpdateBar(_gaugeBar, unit.ActionGauge, 100, GaugeBarColor);
+        UpdateBuffList(unit.Buffs);
 
     }
+
     private static void UpdateBar(ProgressBar bar, int current, int max, Color color)
     {
 
@@ -47,4 +51,24 @@ public partial class BattleUnitStateTip : Control
         bar.Value = Mathf.Clamp(current, 0, Math.Max(max, 1));
         bar.Modulate = color;
     }
+    private void UpdateBuffList(IReadOnlyList<BattleBoardBuffVisual> buffs)
+    {
+        if (buffs.Count == 0)
+        {
+            _buffListLabel.Text = string.Empty;
+            _buffListLabel.Visible = false;
+            return;
+        }
+
+        _buffListLabel.Text = string.Join('\n', buffs.Select(FormatBuffLine));
+        _buffListLabel.Visible = true;
+    }
+    private static string FormatBuffLine(BattleBoardBuffVisual buff)
+    {
+        var levelText = buff.Level == 0 ? string.Empty : buff.Level.ToString();
+        var turnsText = buff.RemainingTurns.ToString();
+        var color = buff.IsDebuff ? "red" : "yellow";
+        return $"[color={color}]{buff.Name}{levelText} {turnsText}[/color]";
+    }
+
 }

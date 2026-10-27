@@ -4,6 +4,7 @@
 [ext_resource type="Texture2D" uid="uid://si2ul6txxyik" path="res://assets/art/head/guoxiang.png" id="2_vo4ki"]
 [ext_resource type="Texture2D" uid="uid://bdmh4kt0xk26e" path="res://assets/art/ui/character_panel/touxiangbiankuang.png" id="3_ak8e7"]
 [ext_resource type="Script" uid="uid://c2owvmpoc1r8u" path="res://UI/Battle/Widgets/BattleUnitStateTip.cs" id="4_script"]
+[ext_resource type="FontVariation" path="res://assets/theme/fonts/martial_display_font.tres" id="5_nqur7"]
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_ucyaw"]
 bg_color = Color(0.08, 0.08, 0.08, 0.92)
@@ -33,8 +34,10 @@ corner_radius_top_right = 1
 corner_radius_bottom_right = 1
 corner_radius_bottom_left = 1
 
-[sub_resource type="LabelSettings" id="LabelSettings_ucyaw"]
-font_size = 26
+[sub_resource type="LabelSettings" id="LabelSettings_n4cc5"]
+line_spacing = -18.0
+font = ExtResource("5_nqur7")
+font_size = 40
 outline_size = 3
 outline_color = Color(0, 0, 0, 1)
 
@@ -85,20 +88,20 @@ metadata/_edit_use_anchors_ = true
 [node name="Labels" type="Control" parent="." unique_id=11406204]
 anchors_preset = 0
 offset_left = 175.0
-offset_top = 179.0
+offset_top = 150.0
 offset_right = 456.0
-offset_bottom = 263.0
+offset_bottom = 234.0
 
 [node name="VBoxContainer" type="VBoxContainer" parent="Labels" unique_id=411100197]
 layout_mode = 0
 offset_top = 19.0
-offset_right = 166.0
-offset_bottom = 101.0
+offset_right = 220.0
+offset_bottom = 115.0
 theme_override_constants/separation = 3
 
 [node name="HpBar" type="ProgressBar" parent="Labels/VBoxContainer" unique_id=1176066189]
 unique_name_in_owner = true
-custom_minimum_size = Vector2(0, 10)
+custom_minimum_size = Vector2(0, 25)
 layout_mode = 2
 mouse_filter = 2
 theme_override_styles/background = SubResource("StyleBoxFlat_ucyaw")
@@ -108,7 +111,7 @@ show_percentage = false
 
 [node name="MpBar" type="ProgressBar" parent="Labels/VBoxContainer" unique_id=1805665136]
 unique_name_in_owner = true
-custom_minimum_size = Vector2(0, 10)
+custom_minimum_size = Vector2(0, 25)
 layout_mode = 2
 mouse_filter = 2
 theme_override_styles/background = SubResource("StyleBoxFlat_ucyaw")
@@ -118,7 +121,7 @@ show_percentage = false
 
 [node name="GaugeBar" type="ProgressBar" parent="Labels/VBoxContainer" unique_id=744895298]
 unique_name_in_owner = true
-custom_minimum_size = Vector2(0, 10)
+custom_minimum_size = Vector2(0, 25)
 layout_mode = 2
 size_flags_stretch_ratio = 0.0
 mouse_filter = 2
@@ -126,12 +129,83 @@ theme_override_styles/background = SubResource("StyleBoxFlat_ucyaw")
 theme_override_styles/fill = SubResource("StyleBoxFlat_vo4ki")
 show_percentage = false
 
-[node name="NameLabel" type="Label" parent="Labels" unique_id=1390086170]
+[node name="NameLabel" type="Label" parent="Labels" unique_id=344728001]
 unique_name_in_owner = true
 layout_mode = 0
-offset_left = -1.0
-offset_top = -11.0
-offset_right = 62.0
-offset_bottom = 20.0
+offset_left = -154.0
+offset_top = -193.0
+offset_right = -115.0
+offset_bottom = 76.0
 text = "侠客"
-label_settings = SubResource("LabelSettings_ucyaw")
+label_settings = SubResource("LabelSettings_n4cc5")
+horizontal_alignment = 1
+vertical_alignment = 1
+autowrap_mode = 1
+
+[node name="RagePips" type="VBoxContainer" parent="Labels" unique_id=706249230]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 7)
+layout_mode = 0
+offset_left = 75.0
+offset_top = -49.0
+offset_right = 97.0
+offset_bottom = 8.0
+mouse_filter = 2
+theme_override_constants/separation = 3
+alignment = 1
+
+[node name="RagePip1" type="ColorRect" parent="Labels/RagePips" unique_id=344937126]
+custom_minimum_size = Vector2(14, 7)
+layout_mode = 2
+mouse_filter = 2
+color = Color(1, 0.78, 0.1, 1)
+
+[node name="RagePip2" type="ColorRect" parent="Labels/RagePips" unique_id=191188178]
+custom_minimum_size = Vector2(14, 7)
+layout_mode = 2
+mouse_filter = 2
+color = Color(1, 0.78, 0.1, 1)
+
+[node name="RagePip3" type="ColorRect" parent="Labels/RagePips" unique_id=1053731059]
+custom_minimum_size = Vector2(14, 7)
+layout_mode = 2
+mouse_filter = 2
+color = Color(1, 0.78, 0.1, 1)
+
+[node name="RagePip4" type="ColorRect" parent="Labels/RagePips" unique_id=1966841533]
+custom_minimum_size = Vector2(14, 7)
+layout_mode = 2
+mouse_filter = 2
+color = Color(1, 0.78, 0.1, 1)
+
+[node name="RagePip5" type="ColorRect" parent="Labels/RagePips" unique_id=612704027]
+custom_minimum_size = Vector2(14, 7)
+layout_mode = 2
+mouse_filter = 2
+color = Color(1, 0.78, 0.1, 1)
+
+[node name="RagePip6" type="ColorRect" parent="Labels/RagePips" unique_id=858766935]
+custom_minimum_size = Vector2(14, 7)
+layout_mode = 2
+mouse_filter = 2
+color = Color(1, 0.78, 0.1, 1)
+
+[node name="BuffListLabel" type="RichTextLabel" parent="Labels" unique_id=1236667237]
+unique_name_in_owner = true
+layout_mode = 0
+offset_left = 293.0
+offset_top = -61.0
+offset_right = 546.0
+offset_bottom = 102.0
+mouse_filter = 2
+theme_override_colors/default_color = Color(1, 1, 1, 1)
+theme_override_colors/font_outline_color = Color(0, 0, 0, 0.85)
+theme_override_constants/line_separation = 0
+theme_override_constants/outline_size = 3
+theme_override_font_sizes/normal_font_size = 25
+bbcode_enabled = true
+text = "[color=yellow]圣战[/color]
+[color=red]缓速[/color]"
+fit_content = true
+scroll_active = false
+autowrap_mode = 0

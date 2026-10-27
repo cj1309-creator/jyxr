@@ -1,9 +1,9 @@
-[gd_scene load_steps=3 format=3]
+[gd_scene format=3 uid="uid://cekwp6vwt2jat"]
 
-[ext_resource type="Script" path="res://UI/Skills/SkillTab.cs" id="1_script"]
-[ext_resource type="PackedScene" path="res://scenes/ui/skill_tab/skill_box.tscn" id="2_skill_box"]
+[ext_resource type="Script" uid="uid://0acphqha6iur" path="res://UI/Skills/SkillTab.cs" id="1_script"]
+[ext_resource type="PackedScene" uid="uid://cn1marksgcufq" path="res://scenes/ui/skill_tab/skill_box.tscn" id="2_skill_box"]
 
-[node name="SkillTab" type="Control"]
+[node name="SkillTab" type="Control" unique_id=233667942]
 layout_mode = 3
 anchors_preset = 15
 anchor_right = 1.0
@@ -13,23 +13,25 @@ grow_vertical = 2
 script = ExtResource("1_script")
 SkillBoxScene = ExtResource("2_skill_box")
 
-[node name="ScrollContainer" type="ScrollContainer" parent="."]
+[node name="ScrollContainer" type="ScrollContainer" parent="." unique_id=495975828]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
+offset_top = 279.0
+offset_bottom = -7.0
 grow_horizontal = 2
 grow_vertical = 2
 
-[node name="GridContainer" type="GridContainer" parent="ScrollContainer"]
+[node name="GridContainer" type="GridContainer" parent="ScrollContainer" unique_id=713139730]
 unique_name_in_owner = true
 layout_mode = 2
 size_flags_horizontal = 3
-columns = 5
 theme_override_constants/h_separation = 12
 theme_override_constants/v_separation = 12
+columns = 5
 
-[node name="EmptyLabel" type="Label" parent="."]
+[node name="EmptyLabel" type="Label" parent="." unique_id=1887207687]
 unique_name_in_owner = true
 visible = false
 layout_mode = 1
