@@ -14,6 +14,8 @@ public partial class SkillTab : Control
 
 	public bool IsReadOnly { get; set; } = true;
 
+	private string? _skillTabType { get; set; }
+
 	private GridContainer _gridContainer = null!;
 	private Label _emptyLabel = null!;
 
@@ -128,4 +130,44 @@ public partial class SkillTab : Control
 			}
 		}
 	}
+
+	private static IEnumerable<SkillInstance> EnumerateTabSkills(CharacterInstance character, string type)
+	{
+
+
+		switch (type) {
+			case "SpecialSkills":
+				foreach (var skill in character.SpecialSkills)
+				{
+					yield return skill;
+				}
+				break;
+			case "ExternalSkills":
+				foreach (var skill in character.ExternalSkills)
+				{
+					yield return skill;
+					foreach (var formSkill in skill.GetFormSkills())
+					{
+						if (!formSkill.IsUnlocked)
+						{
+							continue;
+						}
+
+						yield return formSkill;
+					}
+				}
+				break;
+			default:
+				foreach (var skill in character.ExternalSkills)
+				{
+					yield return skill;
+				}
+				break;
+		}
+
+	}
+	public void changeSkillTabType(string skillTabType){
+		_skillTabType = skillTabType;
+    }
+
 }

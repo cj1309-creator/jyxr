@@ -5,6 +5,8 @@ using Game.Core.Model;
 using Game.Core.Model.Character;
 using Game.Core.Model.Skills;
 using Game.Core.Story;
+using BattleEventScript = Game.Core.Battle.BattleEventScript;
+using BattleEventSegmentEntry = Game.Core.Battle.BattleEventSegmentEntry;
 using SkillAffixDefinition = Game.Core.Affix.SkillAffixDefinition;
 
 namespace Game.Tests;
@@ -220,6 +222,8 @@ internal static class TestContentFactory
 
         return new InMemoryContentRepository
         {
+            BattleEventScripts = new Dictionary<string, BattleEventScript>(StringComparer.Ordinal),
+            BattleEventSegments = new Dictionary<string, BattleEventSegmentEntry>(StringComparer.Ordinal),
             Battles = (battles ?? []).ToDictionary(definition => definition.Id, StringComparer.Ordinal),
             ScopedBattleEffects = (scopedBattleEffects ?? []).ToDictionary(definition => definition.Id, StringComparer.Ordinal),
             Characters = (characters ?? []).ToDictionary(definition => definition.Id, StringComparer.Ordinal),

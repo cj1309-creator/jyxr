@@ -61,7 +61,8 @@ public partial class CharacterPanel : JyPanel
 	private JyButton _talentButton = null!;
 	private JyButton _skillButton = null!;
 	private JyButton _biographyButton = null!;
-	private readonly List<IDisposable> _subscriptions = [];
+    private JyButton _inventoryButton = null!;
+    private readonly List<IDisposable> _subscriptions = [];
 
 	public override void _Ready()
 	{
@@ -87,13 +88,16 @@ public partial class CharacterPanel : JyPanel
 		_talentButton = GetNode<JyButton>("%TalentButton");
 		_skillButton = GetNode<JyButton>("%SkillButton");
 		_biographyButton = GetNode<JyButton>("%BiographyButton");
+        _inventoryButton = GetNode<JyButton>("%InventoryButton");
         _partyButton.Pressed += () => ShowPartyButton(6);
         _attrButton.Pressed += () => ShowAttrButton(0);
 		_equipButton.Pressed += () => ShowTab(1);
 		_skillButton.Pressed += () => ShowTab(2);
 		_talentButton.Pressed += () => ShowTab(3);
 		_biographyButton.Pressed += () => ShowTab(4);
-		_skillTab.SkillToggleRequested += OnSkillToggleRequested;
+        _inventoryButton.Pressed += () => ShowTab(5);
+
+        _skillTab.SkillToggleRequested += OnSkillToggleRequested;
 		_skillTab.SkillDetailRequested += OnSkillDetailRequested;
 		_battleAiOptionButton.ItemSelected += OnBattleAiSelected;
 		_subscriptions.Add(Game.Session.Events.Subscribe<CharacterChangedEvent>(OnCharacterChanged));
@@ -267,6 +271,7 @@ public partial class CharacterPanel : JyPanel
         _equipButton.Visible = false;
         _skillButton.Visible = false;
         _talentButton.Visible = false;
+        _inventoryButton.Visible = true;
     }
     public void ShowRosterButton(int num)
     {
@@ -282,6 +287,7 @@ public partial class CharacterPanel : JyPanel
         _equipButton.Visible = true;
         _skillButton.Visible = true;
         _talentButton.Visible = true;
+        _inventoryButton.Visible = false;
     }
 
     private static int ToDisplayStat(double value) => Mathf.RoundToInt(value);

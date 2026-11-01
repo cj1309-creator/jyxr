@@ -9,6 +9,7 @@ using Game.Core.Story;
 using Game.Core.Serialization;
 using GrantModelAffix = Game.Core.Affix.GrantModelAffix;
 using GrantTalentAffix = Game.Core.Affix.GrantTalentAffix;
+using StoryBattleStep = Game.Core.Story.BattleStep;
 
 namespace Game.Tests;
 
@@ -1536,7 +1537,7 @@ public sealed class ContentLoadingTests
         try
         {
             var repository = new JsonContentLoader().LoadFromDirectory(directoryPath);
-            var battle = Assert.IsType<BattleStep>(Assert.Single(repository.GetStorySegment("story_intro").Segment.Steps));
+            var battle = Assert.IsType<StoryBattleStep>(Assert.Single(repository.GetStorySegment("story_intro").Segment.Steps));
 
             Assert.Empty(battle.Outcomes);
         }

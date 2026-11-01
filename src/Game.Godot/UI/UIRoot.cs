@@ -268,15 +268,7 @@ public partial class UIRoot : Control
 			throw new InvalidOperationException("Character roster panel scene root must be CharacterRosterPanel.");
 		}
 
-		switch (type)
-		{
-		case "party":
-        characterRosterPanel.ShowPartyButton();
-				break;
-        case "Roster":
-        characterRosterPanel.ShowRosterButton();
-				break;
-        }
+		characterRosterPanel.InitialTab = type;
 		characterRosterPanel.CharacterId = characterId;
 	});
 

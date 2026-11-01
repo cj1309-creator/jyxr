@@ -26,8 +26,6 @@
 [ext_resource type="PackedScene" uid="uid://jon61teprdc7" path="res://scenes/ui/party_panel/party_panel.tscn" id="26_7xx2v"]
 [ext_resource type="Texture2D" uid="uid://kas7qwqxlvmc" path="res://assets/art/ui/character_panel/summary_icons/defense.png" id="26_defense_icon"]
 
-[sub_resource type="DPITexture" id="DPITexture_7xx2v"]
-
 [sub_resource type="StyleBoxEmpty" id="1_empty"]
 
 [node name="CharacterPanel" unique_id=104948523 instance=ExtResource("1_panel")]
@@ -38,7 +36,6 @@ offset_left = -2348.0942
 offset_top = -1323.3125
 offset_right = 2347.0942
 offset_bottom = 1324.3127
-texture = SubResource("DPITexture_7xx2v")
 
 [node name="AvatarBox" type="Control" parent="ContentRoot" parent_id_path=PackedInt32Array(196658441) index="0" unique_id=1151911410]
 visible = false
@@ -317,11 +314,12 @@ offset_right = 1920.0
 offset_bottom = 1080.0
 mouse_filter = 2
 theme_override_styles/panel = SubResource("1_empty")
-current_tab = 0
+current_tab = 2
 tabs_visible = false
 
 [node name="AttributeTab" parent="ContentRoot/TabContainer" index="1" unique_id=1934449746 instance=ExtResource("15_attribute_tab")]
 unique_name_in_owner = true
+visible = false
 layout_mode = 2
 mouse_filter = 2
 metadata/_tab_index = 0
@@ -335,7 +333,6 @@ metadata/_tab_index = 1
 
 [node name="SkillTab" parent="ContentRoot/TabContainer" index="3" unique_id=980935855 instance=ExtResource("17_skill_tab")]
 unique_name_in_owner = true
-visible = false
 layout_mode = 2
 mouse_filter = 2
 metadata/_tab_index = 2
@@ -395,7 +392,6 @@ stretch_mode = 0
 
 [node name="EquipButton" parent="ContentRoot/Buttons" index="2" unique_id=1180885541 instance=ExtResource("12_button")]
 unique_name_in_owner = true
-visible = false
 layout_mode = 0
 offset_left = 872.0
 offset_top = 108.0
@@ -406,7 +402,6 @@ stretch_mode = 0
 
 [node name="SkillButton" parent="ContentRoot/Buttons" index="3" unique_id=1557070536 instance=ExtResource("12_button")]
 unique_name_in_owner = true
-visible = false
 layout_mode = 0
 offset_left = 1075.0
 offset_top = 104.0
@@ -417,7 +412,6 @@ stretch_mode = 0
 
 [node name="TalentButton" parent="ContentRoot/Buttons" index="4" unique_id=2089298929 instance=ExtResource("12_button")]
 unique_name_in_owner = true
-visible = false
 layout_mode = 0
 offset_left = 1276.0
 offset_top = 107.0
@@ -435,6 +429,17 @@ offset_top = 106.0
 offset_right = 1663.0
 offset_bottom = 316.0
 texture_normal = ExtResource("11_biography_button")
+stretch_mode = 0
+
+[node name="InventoryButton" parent="ContentRoot/Buttons" index="6" unique_id=685131307 instance=ExtResource("12_button")]
+unique_name_in_owner = true
+visible = false
+layout_mode = 0
+offset_left = 872.0
+offset_top = 108.0
+offset_right = 1082.0
+offset_bottom = 318.0
+texture_normal = ExtResource("8_equip_button")
 stretch_mode = 0
 
 [node name="ScrollContainer" type="ScrollContainer" parent="ContentRoot" parent_id_path=PackedInt32Array(196658441) index="4" unique_id=1343441799]

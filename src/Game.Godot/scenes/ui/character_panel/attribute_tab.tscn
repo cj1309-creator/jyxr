@@ -40,8 +40,8 @@ script = ExtResource("1_script")
 anchors_preset = 0
 offset_left = 4.0
 offset_top = 326.0
-offset_right = 383.0
-offset_bottom = 505.0
+offset_right = 628.0
+offset_bottom = 676.0
 
 [node name="TopFrame" type="TextureRect" parent="statlabels" unique_id=775189672]
 visible = false
@@ -88,9 +88,9 @@ vertical_alignment = 1
 layout_mode = 0
 offset_left = 19.0
 offset_top = 82.0
-offset_right = 532.0
+offset_right = 408.0
 offset_bottom = 358.0
-theme_override_constants/separation = 72
+theme_override_constants/separation = 4
 
 [node name="Column1" type="HBoxContainer" parent="statlabels/Columns" unique_id=1357001928]
 layout_mode = 2
@@ -146,6 +146,7 @@ vertical_alignment = 1
 custom_minimum_size = Vector2(0, 60)
 layout_mode = 2
 theme_override_colors/font_color = Color(0, 0, 0, 1)
+theme_override_font_sizes/font_size = 25
 text = "剑法"
 label_settings = ExtResource("14_label_settings")
 vertical_alignment = 1
