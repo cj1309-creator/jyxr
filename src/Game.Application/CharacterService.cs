@@ -403,17 +403,23 @@ public sealed class CharacterService
         PublishToastAndCharacterChanged(character, $"{character.Name} 移除特技【{specialSkillId}】");
     }
 
-    //public SkillInstance SetSkillSlotBoxInstance(string characterId, string skillId)
-    //{
-    //    var character = GetPartyMember(characterId);
 
-    //    return character.SkillListMutation.Find(character.ExternalSkills, skillId);
-    //}
 
     public void SetExternalSkillActive(string characterId, string skillId, bool isActive)
     {
         var character = GetPartyMember(characterId);
         if (!character.SetExternalSkillActive(skillId, isActive))
+        {
+            return;
+        }
+
+        PublishCharacterChanged(character);
+    }
+
+    public void SetUsedSkillSlot(string characterId, int slotIndex, string? skillId)
+    {
+        var character = GetPartyMember(characterId);
+        if (!character.SetUsedSkillSlot(slotIndex, skillId))
         {
             return;
         }

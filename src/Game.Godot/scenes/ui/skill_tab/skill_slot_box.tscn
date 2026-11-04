@@ -6,6 +6,9 @@
 [sub_resource type="DPITexture" id="DPITexture_os2tc"]
 
 [node name="SkillSlotBox" type="TextureButton" unique_id=1420690908]
+custom_minimum_size = Vector2(85, 85)
+offset_right = 85.0
+offset_bottom = 85.0
 script = ExtResource("1_mea2b")
 
 [node name="Mask" type="TextureRect" parent="." unique_id=2003299476]
@@ -15,8 +18,10 @@ anchor_left = 0.5
 anchor_top = 0.5
 anchor_right = 0.5
 anchor_bottom = 0.5
-offset_right = 85.0
-offset_bottom = 85.0
+offset_left = -43.5
+offset_top = -43.5
+offset_right = 41.5
+offset_bottom = 41.5
 grow_horizontal = 2
 grow_vertical = 2
 mouse_filter = 2

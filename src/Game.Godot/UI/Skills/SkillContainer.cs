@@ -8,7 +8,6 @@ namespace Game.Godot.UI;
 
 public partial class SkillContainer : Control
 {
-	public event Action<SkillInstance>? SkillRequested;
 	public event Action<SkillInstance>? SkillToggleRequested;
 	public event Action<SkillInstance>? SkillDetailRequested;
 
@@ -58,6 +57,7 @@ public partial class SkillContainer : Control
 			_emptyLabel.Visible = true;
 			return;
 		}
+		
 
 		var skills = EnumerateTabSkills(_character, _equipmentSkillSlotType, _skillId).ToArray();
 		_emptyLabel.Visible = skills.Length == 0;
@@ -80,8 +80,10 @@ public partial class SkillContainer : Control
 			instance.QueueFree();
 			throw new InvalidOperationException("SkillBox scene root must be SkillBox.");
 		}
+		
+		var showToggleButton = skill is not FormSkillInstance ? false:true;
 
-		skillBox.Setup(skill, isInteractive: !IsReadOnly);
+		skillBox.Setup(skill, isInteractive: !IsReadOnly, showToggleButton);
 		skillBox.ToggleRequested += OnSkillBoxToggleRequested;
 		skillBox.DetailRequested += OnSkillBoxDetailRequested;
 		return skillBox;

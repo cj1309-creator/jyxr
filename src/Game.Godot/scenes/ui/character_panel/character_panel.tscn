@@ -314,7 +314,7 @@ offset_right = 1920.0
 offset_bottom = 1080.0
 mouse_filter = 2
 theme_override_styles/panel = SubResource("1_empty")
-current_tab = 1
+current_tab = 2
 tabs_visible = false
 
 [node name="AttributeTab" parent="ContentRoot/TabContainer" index="1" unique_id=1934449746 instance=ExtResource("15_attribute_tab")]
@@ -326,13 +326,13 @@ metadata/_tab_index = 0
 
 [node name="EquipmentTab" parent="ContentRoot/TabContainer" index="2" unique_id=1055523497 instance=ExtResource("20_equipment_tab")]
 unique_name_in_owner = true
+visible = false
 layout_mode = 2
 mouse_filter = 2
 metadata/_tab_index = 1
 
 [node name="SkillTab" parent="ContentRoot/TabContainer" index="3" unique_id=233667942 instance=ExtResource("15_2v5sn")]
 unique_name_in_owner = true
-visible = false
 layout_mode = 2
 metadata/_tab_index = 2
 

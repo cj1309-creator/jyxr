@@ -2,7 +2,6 @@ using Game.Core.Model;
 using Game.Core.Model.Character;
 using Game.Core.Model.Skills;
 using Godot;
-using Parlot;
 
 namespace Game.Godot.UI;
 
@@ -16,25 +15,20 @@ public partial class SkillTab : Control
 
 	public bool IsReadOnly { get; set; } = true;
 
-	private string? _skillTabType { get; set; }
-	private Label _emptyLabel = null!;
 	private SkillContainer _skillContainer = null!;
-
 	private GridContainer _gridContainer = null!;
-
+	private readonly List<SkillSlot> _slotViews = [];
 	private CharacterInstance? _character;
-
-	private EquipmentSkillSlotType _lastSlotType = EquipmentSkillSlotType.External;
-	private string? _lastSkillId;
+	private int? _selectedSlotIndex;
 
 	public override void _Ready()
 	{
 		_skillContainer = GetNode<SkillContainer>("%SkillContainer");
 		_gridContainer = GetNode<GridContainer>("%GridContainer");
 		_skillContainer.SkillToggleRequested += OnSkillContainerToggleRequested;
-		_skillContainer.SkillDetailRequested += OnSkillContainerDetailRequested;
+		_skillContainer.SkillDetailRequested += OnSkillSelected;
 		_skillContainer.Visible = false;
-
+		EnsureSlotViews();
 		Refresh();
 	}
 
@@ -42,131 +36,101 @@ public partial class SkillTab : Control
 	{
 		ArgumentNullException.ThrowIfNull(character);
 		_character = character;
-
 		_skillContainer.IsReadOnly = IsReadOnly;
 		Refresh();
 	}
-	private void SyncSlot(
-	SkillSlot box)
-	{
-		var skillInstance = box.GetSkillInstance();
 
-		if (skillInstance is null){
-			box.GetSkillBox().Visible = false;
+	private void EnsureSlotViews()
+	{
+		if (_slotViews.Count > 0)
+		{
 			return;
 		}
-		box.GetSkillBox().Setup(skillInstance);
-	}
-	private void Refresh()
-	{
-		ClearGrid();
-		foreach (var skillSlot in CreateSkillSlots())
-		{
-			_gridContainer.AddChild(skillSlot);
-			SyncSlot(skillSlot);
-		}
 
-		if (_character is not null && _skillContainer.Visible)
-		{
-			_skillContainer.Setup(_character, _lastSlotType, _lastSkillId);
-		}
-		//foreach (var skillSlot in _gridContainer)
-		//{
-		//    _gridContainer.AddChild(skillSlot);
-		//    SyncSlot(skillSlot);
-		//}
-
-
-	}
-	private IEnumerable<SkillSlot> CreateSkillSlots()
-	{
-		var character = _character;
-		if (character is null)
-		{
-			yield break;
-		}
-
-		foreach (var externalSkill in character.ExternalSkills)
-		{
-			var skillSlot = InstantiateSkillSlot();
-			skillSlot.SetSkillInstance(externalSkill);
-			yield return skillSlot;
-		}
-	}
-
-	private SkillSlot InstantiateSkillSlot()
-	{
 		if (SkillSlotScene is null)
 		{
 			throw new InvalidOperationException("SkillSlotScene is not assigned.");
 		}
 
-		var instance = SkillSlotScene.Instantiate();
-		if (instance is not SkillSlot skillSlot)
+		for (var index = 0; index < CharacterInstance.UsedSkillSlotCount; index++)
 		{
-			instance.QueueFree();
-			throw new InvalidOperationException("SkillSlot scene root must be SkillSlot.");
+			var instance = SkillSlotScene.Instantiate();
+			if (instance is not SkillSlot skillSlot)
+			{
+				instance.QueueFree();
+				throw new InvalidOperationException("SkillSlot scene root must be SkillSlot.");
+			}
+
+			skillSlot.Setup(index);
+			skillSlot.Requested += OnSkillSlotRequested;
+			_gridContainer.AddChild(skillSlot);
+			_slotViews.Add(skillSlot);
+		}
+	}
+
+	private void Refresh()
+	{
+		for (var index = 0; index < _slotViews.Count; index++)
+		{
+			_slotViews[index].SetSkill(ResolveSlotSkill(index));
 		}
 
-		skillSlot.Setup(EquipmentSkillSlotType.External, true);
-		skillSlot.Requested += OnSkillSlotRequested;
-		skillSlot.ToggleRequested += OnSkillSlotToggleRequested;
-		skillSlot.DetailRequested += OnSkillSlotDetailRequested;
-		return skillSlot;
-	}
-	private void ClearGrid()
-	{
-		foreach (var child in _gridContainer.GetChildren())
+		if (_character is not null && _skillContainer.Visible)
 		{
-			child.QueueFree();
+			_skillContainer.Setup(_character, EquipmentSkillSlotType.External, null);
 		}
 	}
-   
+
+	private SkillInstance? ResolveSlotSkill(int slotIndex)
+	{
+		var character = _character;
+		if (character is null || slotIndex >= character.UsedSkillSlots.Count)
+		{
+			return null;
+		}
+
+		var skillId = character.UsedSkillSlots[slotIndex];
+		return skillId is null ? null : character.GetExternalSkill(skillId);
+	}
+
 	private void OnSkillSlotRequested(SkillSlot skillSlot)
 	{
-		ArgumentNullException.ThrowIfNull(_character);
-		//_skillContainer.Visible= true;
-		switch (_skillContainer.Visible) {
-			case true:
-				_skillContainer.Visible = false;
-				break;
-			case false:
-				_skillContainer.Visible = true;
-				break;
+		//if (_selectedSlotIndex == skillSlot.SlotIndex || _character is null)
+		//{
+
+		_skillContainer.Visible = !_skillContainer.Visible;
+
+		if (!_skillContainer.Visible || _character is null)
+		{
+	
+			return;
 		}
-		//_skillContainer.SkillToggleRequested += OnSkillContainerToggleRequested;
-		//_skillContainer.SkillDetailRequested += OnSkillContainerDetailRequested;
+		//}
+
+		//if (_selectedSlotIndex != skillSlot.SlotIndex) { 
+		_selectedSlotIndex = skillSlot.SlotIndex;
+		//}
+		
+		var skillId= _character.GetUsedSkillSlot(skillSlot.SlotIndex);
 		_skillContainer.IsReadOnly = IsReadOnly;
-		_lastSlotType = skillSlot._equipmentSkillSlotType;
-		_lastSkillId = skillSlot.GetSkillInstance()?.Id;
-		_skillContainer.Setup(_character, _lastSlotType, _lastSkillId);
+		_skillContainer.Setup(_character, EquipmentSkillSlotType.External, skillId);
 
 	}
-	private void OnSkillSlotToggleRequested(SkillInstance skill)
+
+	private void OnSkillSelected(SkillInstance skill)
 	{
+		if (_character is null || IsReadOnly || _selectedSlotIndex is not { } slotIndex ||
+			skill is not ExternalSkillInstance)
+		{
+			SkillDetailRequested?.Invoke(skill);
+			return;
+		}
 
-		SkillToggleRequested?.Invoke(skill);
+		Game.CharacterService.SetUsedSkillSlot(_character.Id, slotIndex, skill.Id);
 	}
 
-	private void OnSkillSlotDetailRequested(SkillInstance skill)
-	{
-		SkillDetailRequested?.Invoke(skill);
-	}
 	private void OnSkillContainerToggleRequested(SkillInstance skill)
 	{
 		SkillToggleRequested?.Invoke(skill);
 	}
-
-	private void OnSkillContainerDetailRequested(SkillInstance skill)
-	{
-		SkillDetailRequested?.Invoke(skill);
-	}
-
-
-
-
-
-
-
-
 }
