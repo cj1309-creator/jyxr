@@ -313,8 +313,16 @@ public sealed class CharacterInstance
     public int? GetExternalSkillLevel(string externalSkillId) =>
         SkillListMutation.Find(ExternalSkills, externalSkillId)?.Level;
 
+
+
     public int? GetInternalSkillLevel(string internalSkillId) =>
         SkillListMutation.Find(InternalSkills, internalSkillId)?.Level;
+
+    public ExternalSkillInstance? GetExternalSkill(string externalSkillId) =>
+    SkillListMutation.Find(ExternalSkills, externalSkillId);
+
+   // public SkillInstance? GetExternalSkill(string externalSkillId) =>
+   //SkillListMutation.Find(ExternalSkills, externalSkillId);
 
     public IReadOnlyList<FormSkillInstance> GetFormSkills() =>
         ExternalSkills.SelectMany(skill => skill.GetFormSkills())

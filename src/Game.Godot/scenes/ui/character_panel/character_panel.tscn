@@ -11,9 +11,9 @@
 [ext_resource type="Texture2D" uid="uid://burcoa7lhsxxo" path="res://assets/art/ui/character_panel/renwuzhuangtai_tianfu.png" id="10_talent_button"]
 [ext_resource type="Texture2D" uid="uid://du67x404pgcg3" path="res://assets/art/ui/character_panel/renwuzhuangtai_liezhuang.png" id="11_biography_button"]
 [ext_resource type="PackedScene" uid="uid://b1hd7sr7biah0" path="res://scenes/ui/base/jy_button.tscn" id="12_button"]
+[ext_resource type="PackedScene" uid="uid://bq1eisvtxl80u" path="res://scenes/ui/skill_tab/skill_tab.tscn" id="15_2v5sn"]
 [ext_resource type="PackedScene" uid="uid://cnvfko4652fdb" path="res://scenes/ui/character_panel/attribute_tab.tscn" id="15_attribute_tab"]
 [ext_resource type="PackedScene" uid="uid://bcmomxyksiwp8" path="res://scenes/ui/character_panel/talent_tab.tscn" id="16_talent_tab"]
-[ext_resource type="PackedScene" uid="uid://cekwp6vwt2jat" path="res://scenes/ui/skill_tab/skill_tab.tscn" id="17_skill_tab"]
 [ext_resource type="PackedScene" path="res://scenes/ui/character_panel/biography_tab.tscn" id="18_biography_tab"]
 [ext_resource type="LabelSettings" uid="uid://bny34iuy5pp6r" path="res://assets/theme/label_character_under_avatar.tres" id="19_under_avatar"]
 [ext_resource type="PackedScene" uid="uid://b72cussamrrp0" path="res://scenes/ui/character_panel/equipment_tab.tscn" id="20_equipment_tab"]
@@ -314,7 +314,7 @@ offset_right = 1920.0
 offset_bottom = 1080.0
 mouse_filter = 2
 theme_override_styles/panel = SubResource("1_empty")
-current_tab = 2
+current_tab = 1
 tabs_visible = false
 
 [node name="AttributeTab" parent="ContentRoot/TabContainer" index="1" unique_id=1934449746 instance=ExtResource("15_attribute_tab")]
@@ -326,15 +326,14 @@ metadata/_tab_index = 0
 
 [node name="EquipmentTab" parent="ContentRoot/TabContainer" index="2" unique_id=1055523497 instance=ExtResource("20_equipment_tab")]
 unique_name_in_owner = true
-visible = false
 layout_mode = 2
 mouse_filter = 2
 metadata/_tab_index = 1
 
-[node name="SkillTab" parent="ContentRoot/TabContainer" index="3" unique_id=980935855 instance=ExtResource("17_skill_tab")]
+[node name="SkillTab" parent="ContentRoot/TabContainer" index="3" unique_id=233667942 instance=ExtResource("15_2v5sn")]
 unique_name_in_owner = true
+visible = false
 layout_mode = 2
-mouse_filter = 2
 metadata/_tab_index = 2
 
 [node name="TalentTab" parent="ContentRoot/TabContainer" index="4" unique_id=80760765 instance=ExtResource("16_talent_tab")]

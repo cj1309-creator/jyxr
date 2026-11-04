@@ -1,7 +1,8 @@
-[gd_scene format=3 uid="uid://cekwp6vwt2jat"]
+[gd_scene format=3 uid="uid://bq1eisvtxl80u"]
 
-[ext_resource type="Script" uid="uid://0acphqha6iur" path="res://UI/Skills/SkillTab.cs" id="1_script"]
-[ext_resource type="PackedScene" uid="uid://cn1marksgcufq" path="res://scenes/ui/skill_tab/skill_box.tscn" id="2_skill_box"]
+[ext_resource type="Script" uid="uid://bar773jtjsnh" path="res://UI/Skills/SkillTab.cs" id="1_6qx3x"]
+[ext_resource type="PackedScene" uid="uid://cekwp6vwt2jat" path="res://scenes/ui/skill_tab/skill_container.tscn" id="2_8ewu6"]
+[ext_resource type="PackedScene" uid="uid://bllpu5amod4eu" path="res://scenes/ui/skill_tab/skill_slot.tscn" id="2_jlbc4"]
 
 [node name="SkillTab" type="Control" unique_id=233667942]
 layout_mode = 3
@@ -10,55 +11,33 @@ anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
-script = ExtResource("1_script")
-SkillBoxScene = ExtResource("2_skill_box")
+script = ExtResource("1_6qx3x")
+SkillSlotScene = ExtResource("2_jlbc4")
 
-[node name="ScrollContainer" type="ScrollContainer" parent="." unique_id=495975828]
+[node name="SkillContainer" parent="." unique_id=956727848 instance=ExtResource("2_8ewu6")]
+unique_name_in_owner = true
 layout_mode = 1
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
-offset_top = 279.0
-offset_bottom = -7.0
-grow_horizontal = 2
-grow_vertical = 2
+offset_left = 536.0
+offset_top = 300.0
+offset_right = -138.0
+offset_bottom = 8.0
 
-[node name="GridContainer" type="GridContainer" parent="ScrollContainer" unique_id=713139730]
+[node name="VBoxContainer2" type="VBoxContainer" parent="." unique_id=2078110219]
+layout_mode = 0
+offset_left = 2.0
+offset_top = 282.0
+offset_right = 478.0
+offset_bottom = 1085.0
+
+[node name="ScrollContainer" type="ScrollContainer" parent="VBoxContainer2" unique_id=1839202957]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+
+[node name="GridContainer" type="GridContainer" parent="VBoxContainer2/ScrollContainer" unique_id=541835941]
 unique_name_in_owner = true
 layout_mode = 2
 size_flags_horizontal = 3
 theme_override_constants/h_separation = 12
 theme_override_constants/v_separation = 12
 columns = 5
-
-[node name="EmptyLabel" type="Label" parent="." unique_id=1887207687]
-unique_name_in_owner = true
-visible = false
-layout_mode = 1
-anchors_preset = 8
-anchor_left = 0.5
-anchor_top = 0.5
-anchor_right = 0.5
-anchor_bottom = 0.5
-offset_left = -120.0
-offset_top = -20.0
-offset_right = 120.0
-offset_bottom = 20.0
-grow_horizontal = 2
-grow_vertical = 2
-theme_override_font_sizes/font_size = 24
-text = "暂无可显示技能"
-horizontal_alignment = 1
-
-[node name="VBoxContainer" type="VBoxContainer" parent="." unique_id=1379323509]
-layout_mode = 0
-offset_left = 1318.0
-offset_top = 282.0
-offset_right = 1914.0
-offset_bottom = 1085.0
-
-[node name="ScrollContainer" type="ScrollContainer" parent="VBoxContainer" unique_id=2097200641]
-layout_mode = 2
-
-[node name="GridContainer" type="GridContainer" parent="VBoxContainer/ScrollContainer" unique_id=1334271533]
-layout_mode = 2

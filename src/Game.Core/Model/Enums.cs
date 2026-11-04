@@ -62,6 +62,18 @@ public enum EquipmentSlotType
     Accessory,
 }
 
+public enum EquipmentSkillSlotType
+{
+    [JsonStringEnumMemberName("external")]
+    External,
+    [JsonStringEnumMemberName("internal")]
+    Internal,
+    [JsonStringEnumMemberName("special")]
+    Special,
+}
+
+
+
 public enum StatType
 {
     [JsonStringEnumMemberName("bili")]
