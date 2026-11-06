@@ -120,6 +120,9 @@ current_time_slot !in ['子', '丑']
 | `favorability(character_id='女主')` | Number | 指定关系目标的好感；别名 `haogan`。 |
 | `character_level(character_id)` | Number | 活动队伍角色等级。 |
 | `character_stat(character_id, stat)` | Number | 活动队伍角色基础属性。 |
+| `reputation(character_id)` | Number | 活动队伍角色的名声 = `\|好名声\| + \|坏名声\|`。 |
+| `good_reputation(character_id)` | Number | 活动队伍角色的好名声（累加值，可为负）。 |
+| `bad_reputation(character_id)` | Number | 活动队伍角色的坏名声（累加值，约定为负数）。 |
 | `skill_level(character_id, skill_id)` | Number | 外功或内功等级；角色未学会时为 `0`。 |
 | `map_event_completed(map_id, location_id, event_id)` | Boolean | 指定地图地点下的事件是否已完成；事件 ID 只需在所属地点内唯一。 |
 | `story_completed(story_id)` | Boolean | 剧情是否完成；别名 `should_finish`。 |
@@ -188,6 +191,7 @@ change_silver(-500)
 | `set_sect(id)` | 设置门派。 | `menpai` |
 | `change_morality(delta)` | 调整道德。 | `daode` |
 | `change_favorability(character_id, delta)` | 调整指定关系目标好感。 | `haogan` |
+| `change_reputation(character_id, good_delta, bad_delta)` | 调整角色名声；坏名声传负值，两项各自累加。 | `mingsheng` |
 | `set_rank(rank)` | 设置江湖排名值。 | — |
 
 ```text

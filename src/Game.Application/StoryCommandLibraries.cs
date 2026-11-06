@@ -189,6 +189,10 @@ internal sealed class CharacterGrowthStoryCommands
     public void ChangeStat(string characterId, string stat, int delta) =>
         _session.CharacterService.AddBaseStat(characterId, stat, delta);
 
+    [StoryCommand("change_reputation", "mingsheng")]
+    public void ChangeReputation(string characterId, int goodDelta, int badDelta) =>
+        _session.CharacterService.ChangeReputation(characterId, goodDelta, badDelta);
+
     [StoryCommand("set_growth", "growtemplate")]
     public void SetGrowth(string characterId, string growthId) =>
         _session.CharacterService.SetGrowTemplate(characterId, growthId);

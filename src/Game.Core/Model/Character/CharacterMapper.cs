@@ -80,6 +80,7 @@ public static class CharacterMapper
         character.GrantExperience(record.Experience);
         character.SetUnspentStatPoints(record.UnspentStatPoints);
         CopyStats(record.BaseStats, character.BaseStats);
+        character.RestoreReputation(record.GoodReputation, record.BadReputation);
 
         EnsureSingleEquippedInternalSkill(record.InternalSkills.Count(skill => skill.Equipped));
         character.UnlockedTalents.AddRange(record.UnlockedTalentIds.Select(contentRepository.GetTalent));
@@ -145,7 +146,9 @@ public static class CharacterMapper
                 entry => EquipmentMapper.ToRecord(entry.Value)),
             character.Gender,
             character.AiType,
-            character.UsedSkillSlots.ToList());
+            character.UsedSkillSlots.ToList(),
+            character.Reputation.Good,
+            character.Reputation.Bad);
 
     private static void CopyStats(IReadOnlyDictionary<StatType, int> source, Dictionary<StatType, int> target)
     {

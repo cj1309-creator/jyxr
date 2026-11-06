@@ -5,7 +5,7 @@ using Game.Core.Model.Skills;
 
 namespace Game.Core.Model.Character;
 
-public sealed class CharacterInstance
+public sealed partial class CharacterInstance
 {
     public const int MaxBattleRage = 6;
     public const int UsedSkillSlotCount = 10;

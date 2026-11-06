@@ -234,6 +234,15 @@ internal sealed class PartyCharacterQueryFunctions
     public int CharacterStat(string characterId, string stat) =>
         GetActiveCharacter(characterId).GetBaseStat(StatCatalog.Parse(stat));
 
+    [ExpressionFunction("reputation")]
+    public int Reputation(string characterId) => GetActiveCharacter(characterId).Reputation.Total;
+
+    [ExpressionFunction("good_reputation")]
+    public int GoodReputation(string characterId) => GetActiveCharacter(characterId).Reputation.Good;
+
+    [ExpressionFunction("bad_reputation")]
+    public int BadReputation(string characterId) => GetActiveCharacter(characterId).Reputation.Bad;
+
     [ExpressionFunction("skill_level")]
     public int SkillLevel(string characterId, string skillId)
     {

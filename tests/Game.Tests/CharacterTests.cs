@@ -307,6 +307,46 @@ public sealed class CharacterTests
     }
 
     [Fact]
+    public void ReputationSumsAbsoluteGoodAndBad()
+    {
+        var character = TestContentFactory.CreateCharacterInstance(
+            "char_001",
+            TestContentFactory.CreateCharacterDefinition("hero_knight"));
+
+        Assert.Equal(0, character.Reputation.Total);
+
+        Assert.True(character.ChangeReputation(10, -2));
+        Assert.Equal(10, character.Reputation.Good);
+        Assert.Equal(-2, character.Reputation.Bad);
+        Assert.Equal(12, character.Reputation.Total);
+
+        Assert.True(character.ChangeReputation(-4, -3));
+        Assert.Equal(6, character.Reputation.Good);
+        Assert.Equal(-5, character.Reputation.Bad);
+        Assert.Equal(11, character.Reputation.Total);
+
+        Assert.False(character.ChangeReputation(0, 0));
+    }
+
+    [Fact]
+    public void CharacterRecord_RoundTripsReputation()
+    {
+        var definition = TestContentFactory.CreateCharacterDefinition("hero_knight");
+        var character = TestContentFactory.CreateCharacterInstance("char_001", definition);
+        character.ChangeReputation(7, -3);
+
+        var json = JsonSerializer.Serialize(CharacterMapper.ToRecord(character), GameJson.Default);
+        var record = JsonSerializer.Deserialize<CharacterRecord>(json, GameJson.Default)!;
+        var repository = TestContentFactory.CreateRepository(characters: [definition]);
+
+        var restored = CharacterMapper.FromRecord(record, repository);
+
+        Assert.Equal(7, restored.Reputation.Good);
+        Assert.Equal(-3, restored.Reputation.Bad);
+        Assert.Equal(10, restored.Reputation.Total);
+    }
+
+    [Fact]
     public void SetSpecialSkillActive_UpdatesExistingInstanceWithoutReplacingIt()
     {
         var skill = new SpecialSkillDefinition(

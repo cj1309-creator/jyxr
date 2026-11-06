@@ -437,6 +437,17 @@ public sealed class CharacterService
     }
 
 
+    public void ChangeReputation(string characterId, int goodDelta, int badDelta)
+    {
+        var character = GetPartyMember(characterId);
+        if (!character.ChangeReputation(goodDelta, badDelta))
+        {
+            return;
+        }
+
+        PublishCharacterChanged(character);
+    }
+
     public void SetSpecialSkillActive(string characterId, string skillId, bool isActive)
     {
         var character = GetPartyMember(characterId);

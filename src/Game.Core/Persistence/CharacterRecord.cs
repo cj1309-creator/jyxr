@@ -44,4 +44,6 @@ public sealed record CharacterRecord(
     IReadOnlyDictionary<EquipmentSlotType, EquipmentRecord> EquippedItems,
     CharacterGender? Gender = null,
     BattleAiType AiType = BattleAiType.Basic,
-    IReadOnlyList<string?>? UsedSkillSlots = null);
+    IReadOnlyList<string?>? UsedSkillSlots = null,
+    int GoodReputation = 0,
+    int BadReputation = 0);
