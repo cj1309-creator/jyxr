@@ -71,7 +71,13 @@ public enum EquipmentSkillSlotType
     [JsonStringEnumMemberName("special")]
     Special,
 }
-
+public enum AdditionalStatType
+{
+    [JsonStringEnumMemberName("badreputation")]
+    BadReputation,
+    [JsonStringEnumMemberName("goodreputation")]
+    GoodReputation,
+}
 
 
 public enum StatType
@@ -124,4 +130,8 @@ public enum StatType
     Speed,
     [JsonStringEnumMemberName("movement")]
     Movement,
+    [JsonStringEnumMemberName("charm")]
+    Charm,
+    [JsonStringEnumMemberName("reputation")]
+    Reputation,
 }

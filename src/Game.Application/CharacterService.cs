@@ -403,7 +403,16 @@ public sealed class CharacterService
         PublishToastAndCharacterChanged(character, $"{character.Name} 移除特技【{specialSkillId}】");
     }
 
+    public void RemoveUsedSkillSlot(string characterId, int slotIndex)
+    {
+        var character = GetPartyMember(characterId);
+        if (!character.RemoveUsedSkillSlot(slotIndex))
+        {
+            return;
+        }
 
+        PublishCharacterChanged(character);
+    }
 
     public void SetExternalSkillActive(string characterId, string skillId, bool isActive)
     {
@@ -426,6 +435,7 @@ public sealed class CharacterService
 
         PublishCharacterChanged(character);
     }
+
 
     public void SetSpecialSkillActive(string characterId, string skillId, bool isActive)
     {

@@ -77,9 +77,14 @@ public partial class SkillTab : Control
 
 		if (_character is not null && _skillContainer.Visible)
 		{
-			_skillContainer.Setup(_character, EquipmentSkillSlotType.External, null);
+			_skillContainer.Setup(_character, EquipmentSkillSlotType.External, ResolveSelectedSkillId());
 		}
 	}
+
+	private string? ResolveSelectedSkillId() =>
+		_character is not null && _selectedSlotIndex is { } slotIndex
+			? _character.GetUsedSkillSlot(slotIndex)
+			: null;
 
 	private SkillInstance? ResolveSlotSkill(int slotIndex)
 	{
@@ -95,22 +100,24 @@ public partial class SkillTab : Control
 
 	private void OnSkillSlotRequested(SkillSlot skillSlot)
 	{
-		//if (_selectedSlotIndex == skillSlot.SlotIndex || _character is null)
-		//{
+		if (_selectedSlotIndex == skillSlot.SlotIndex || _character is null)
+		{
 
-		_skillContainer.Visible = !_skillContainer.Visible;
+			_skillContainer.Visible = !_skillContainer.Visible;
 
 		if (!_skillContainer.Visible || _character is null)
 		{
 	
 			return;
 		}
-		//}
+	}
 
-		//if (_selectedSlotIndex != skillSlot.SlotIndex) { 
-		_selectedSlotIndex = skillSlot.SlotIndex;
-		//}
-		
+		if (_selectedSlotIndex != skillSlot.SlotIndex)
+		{
+			_skillContainer.Visible = true;
+			_selectedSlotIndex = skillSlot.SlotIndex;
+		}
+
 		var skillId= _character.GetUsedSkillSlot(skillSlot.SlotIndex);
 		_skillContainer.IsReadOnly = IsReadOnly;
 		_skillContainer.Setup(_character, EquipmentSkillSlotType.External, skillId);
@@ -119,15 +126,24 @@ public partial class SkillTab : Control
 
 	private void OnSkillSelected(SkillInstance skill)
 	{
-		if (_character is null || IsReadOnly || _selectedSlotIndex is not { } slotIndex ||
+		if (_character is null || _selectedSlotIndex is not { } slotIndex ||
 			skill is not ExternalSkillInstance)
 		{
 			SkillDetailRequested?.Invoke(skill);
 			return;
 		}
 
-		Game.CharacterService.SetUsedSkillSlot(_character.Id, slotIndex, skill.Id);
+		if (_character.GetUsedSkillSlot(slotIndex) is null)
+		{
+			Game.CharacterService.SetUsedSkillSlot(_character.Id, slotIndex, skill.Id);
+		}
+		else if (_character.GetUsedSkillSlot(slotIndex) is not null) {
+			Game.CharacterService.RemoveUsedSkillSlot(_character.Id, slotIndex);
+		}
 	}
+
+
+
 
 	private void OnSkillContainerToggleRequested(SkillInstance skill)
 	{

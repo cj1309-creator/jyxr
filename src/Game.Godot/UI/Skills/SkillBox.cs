@@ -20,7 +20,10 @@ public partial class SkillBox : Button
 	private TextureButton _activeButton = null!;
 	private TextureRect _checkMark = null!;
 
-	public SkillId_Placeholder
+	private SkillInstance? _skill;
+
+	public string? SkillId => _skill?.Id;
+
 	private bool _isInteractive;
 	private bool _showToggleButton = true;
 

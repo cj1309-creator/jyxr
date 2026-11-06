@@ -22,6 +22,7 @@ public partial class SkillContainer : Control
 
 	private GridContainer _gridContainer = null!;
 	private Label _emptyLabel = null!;
+	private readonly List<SkillBox> _boxViews = [];
 
 	private CharacterInstance? _character;
 
@@ -44,27 +45,63 @@ public partial class SkillContainer : Control
 
 	private void Refresh()
 	{
-		//ArgumentNullException.ThrowIfNull(_equipmentSkillSlotType);
-		//ArgumentNullException.ThrowIfNull(_skillId);
 		if (!IsInsideTree())
 		{
 			return;
 		}
 
-		ClearGrid();
 		if (_character is null)
 		{
+			ClearGrid();
 			_emptyLabel.Visible = true;
 			return;
 		}
-		
 
 		var skills = EnumerateTabSkills(_character, _equipmentSkillSlotType, _skillId).ToArray();
 		_emptyLabel.Visible = skills.Length == 0;
-		foreach (var skill in skills)
+		SyncSkillBoxes(skills);
+	}
+
+	private void SyncSkillBoxes(IReadOnlyList<SkillInstance> skills)
+	{
+		if (NeedsRebuild(skills))
 		{
-			_gridContainer.AddChild(CreateSkillBox(skill));
+			ClearGrid();
+			foreach (var skill in skills)
+			{
+				var skillBox = CreateSkillBox(skill);
+				_gridContainer.AddChild(skillBox);
+				_boxViews.Add(skillBox);
+			}
+
+			return;
 		}
+
+		for (var index = 0; index < skills.Count; index++)
+		{
+			_boxViews[index].Setup(
+				skills[index],
+				isInteractive: !IsReadOnly,
+				showToggleButton: ShouldShowToggleButton(skills[index]));
+		}
+	}
+
+	private bool NeedsRebuild(IReadOnlyList<SkillInstance> skills)
+	{
+		if (_boxViews.Count != skills.Count)
+		{
+			return true;
+		}
+
+		for (var index = 0; index < skills.Count; index++)
+		{
+			if (!string.Equals(_boxViews[index].SkillId, skills[index].Id, StringComparison.Ordinal))
+			{
+				return true;
+			}
+		}
+
+		return false;
 	}
 
 	private SkillBox CreateSkillBox(SkillInstance skill)
@@ -81,13 +118,16 @@ public partial class SkillContainer : Control
 			throw new InvalidOperationException("SkillBox scene root must be SkillBox.");
 		}
 		
-		var showToggleButton = skill is not FormSkillInstance ? false:true;
+		var showToggleButton = ShouldShowToggleButton(skill);
 
 		skillBox.Setup(skill, isInteractive: !IsReadOnly, showToggleButton);
 		skillBox.ToggleRequested += OnSkillBoxToggleRequested;
 		skillBox.DetailRequested += OnSkillBoxDetailRequested;
 		return skillBox;
 	}
+
+	private static bool ShouldShowToggleButton(SkillInstance skill) =>
+		skill is FormSkillInstance;
 
 	private void OnSkillBoxToggleRequested(SkillInstance skill)
 	{
@@ -105,6 +145,8 @@ public partial class SkillContainer : Control
 		{
 			child.QueueFree();
 		}
+
+		_boxViews.Clear();
 	}
 
 	private static IEnumerable<SkillInstance> EnumerateSkills(CharacterInstance character)
