@@ -1,3 +1,4 @@
+using Game.Core.Model;
 using Game.Core.Model.Character;
 using Game.Core.Model.Skills;
 using Godot;
@@ -10,19 +11,24 @@ public partial class SkillTab : Control
 	public event Action<SkillInstance>? SkillDetailRequested;
 
 	[Export]
-	public PackedScene SkillBoxScene { get; set; } = null!;
+	public PackedScene SkillSlotScene { get; set; } = null!;
 
 	public bool IsReadOnly { get; set; } = true;
 
+	private SkillContainer _skillContainer = null!;
 	private GridContainer _gridContainer = null!;
-	private Label _emptyLabel = null!;
-
+	private readonly List<SkillSlot> _slotViews = [];
 	private CharacterInstance? _character;
+	private int? _selectedSlotIndex;
 
 	public override void _Ready()
 	{
+		_skillContainer = GetNode<SkillContainer>("%SkillContainer");
 		_gridContainer = GetNode<GridContainer>("%GridContainer");
-		_emptyLabel = GetNode<Label>("%EmptyLabel");
+		_skillContainer.SkillToggleRequested += OnSkillContainerToggleRequested;
+		_skillContainer.SkillDetailRequested += OnSkillSelected;
+		_skillContainer.Visible = false;
+		EnsureSlotViews();
 		Refresh();
 	}
 
@@ -30,102 +36,117 @@ public partial class SkillTab : Control
 	{
 		ArgumentNullException.ThrowIfNull(character);
 		_character = character;
+		_skillContainer.IsReadOnly = IsReadOnly;
 		Refresh();
+	}
+
+	private void EnsureSlotViews()
+	{
+		if (_slotViews.Count > 0)
+		{
+			return;
+		}
+
+		if (SkillSlotScene is null)
+		{
+			throw new InvalidOperationException("SkillSlotScene is not assigned.");
+		}
+
+		for (var index = 0; index < CharacterInstance.UsedSkillSlotCount; index++)
+		{
+			var instance = SkillSlotScene.Instantiate();
+			if (instance is not SkillSlot skillSlot)
+			{
+				instance.QueueFree();
+				throw new InvalidOperationException("SkillSlot scene root must be SkillSlot.");
+			}
+
+			skillSlot.Setup(index);
+			skillSlot.Requested += OnSkillSlotRequested;
+			_gridContainer.AddChild(skillSlot);
+			_slotViews.Add(skillSlot);
+		}
 	}
 
 	private void Refresh()
 	{
-		if (!IsInsideTree())
+		for (var index = 0; index < _slotViews.Count; index++)
 		{
-			return;
+			_slotViews[index].SetSkill(ResolveSlotSkill(index));
 		}
 
-		ClearGrid();
-		if (_character is null)
+		if (_character is not null && _skillContainer.Visible)
 		{
-			_emptyLabel.Visible = true;
-			return;
-		}
-
-		var skills = EnumerateSkills(_character).ToArray();
-		_emptyLabel.Visible = skills.Length == 0;
-		foreach (var skill in skills)
-		{
-			_gridContainer.AddChild(CreateSkillBox(skill));
+			_skillContainer.Setup(_character, EquipmentSkillSlotType.External, ResolveSelectedSkillId());
 		}
 	}
 
-	private SkillBox CreateSkillBox(SkillInstance skill)
+	private string? ResolveSelectedSkillId() =>
+		_character is not null && _selectedSlotIndex is { } slotIndex
+			? _character.GetUsedSkillSlot(slotIndex)
+			: null;
+
+	private SkillInstance? ResolveSlotSkill(int slotIndex)
 	{
-		if (SkillBoxScene is null)
+		var character = _character;
+		if (character is null || slotIndex >= character.UsedSkillSlots.Count)
 		{
-			throw new InvalidOperationException("SkillBoxScene is not assigned.");
+			return null;
 		}
 
-		var instance = SkillBoxScene.Instantiate();
-		if (instance is not SkillBox skillBox)
-		{
-			instance.QueueFree();
-			throw new InvalidOperationException("SkillBox scene root must be SkillBox.");
-		}
-
-		skillBox.Setup(skill, isInteractive: !IsReadOnly);
-		skillBox.ToggleRequested += OnSkillBoxToggleRequested;
-		skillBox.DetailRequested += OnSkillBoxDetailRequested;
-		return skillBox;
+		var skillId = character.UsedSkillSlots[slotIndex];
+		return skillId is null ? null : character.GetExternalSkill(skillId);
 	}
 
-	private void OnSkillBoxToggleRequested(SkillInstance skill)
+	private void OnSkillSlotRequested(SkillSlot skillSlot)
+	{
+		if (_selectedSlotIndex == skillSlot.SlotIndex || _character is null)
+		{
+
+			_skillContainer.Visible = !_skillContainer.Visible;
+
+		if (!_skillContainer.Visible || _character is null)
+		{
+	
+			return;
+		}
+	}
+
+		if (_selectedSlotIndex != skillSlot.SlotIndex)
+		{
+			_skillContainer.Visible = true;
+			_selectedSlotIndex = skillSlot.SlotIndex;
+		}
+
+		var skillId= _character.GetUsedSkillSlot(skillSlot.SlotIndex);
+		_skillContainer.IsReadOnly = IsReadOnly;
+		_skillContainer.Setup(_character, EquipmentSkillSlotType.External, skillId);
+
+	}
+
+	private void OnSkillSelected(SkillInstance skill)
+	{
+		if (_character is null || _selectedSlotIndex is not { } slotIndex ||
+			skill is not ExternalSkillInstance)
+		{
+			SkillDetailRequested?.Invoke(skill);
+			return;
+		}
+
+		if (_character.GetUsedSkillSlot(slotIndex) is null)
+		{
+			Game.CharacterService.SetUsedSkillSlot(_character.Id, slotIndex, skill.Id);
+		}
+		else if (_character.GetUsedSkillSlot(slotIndex) is not null) {
+			Game.CharacterService.RemoveUsedSkillSlot(_character.Id, slotIndex);
+		}
+	}
+
+
+
+
+	private void OnSkillContainerToggleRequested(SkillInstance skill)
 	{
 		SkillToggleRequested?.Invoke(skill);
-	}
-
-	private void OnSkillBoxDetailRequested(SkillInstance skill)
-	{
-		SkillDetailRequested?.Invoke(skill);
-	}
-
-	private void ClearGrid()
-	{
-		foreach (var child in _gridContainer.GetChildren())
-		{
-			child.QueueFree();
-		}
-	}
-
-	private static IEnumerable<SkillInstance> EnumerateSkills(CharacterInstance character)
-	{
-		foreach (var skill in character.SpecialSkills)
-		{
-			yield return skill;
-		}
-
-		foreach (var skill in character.ExternalSkills)
-		{
-			yield return skill;
-			foreach (var formSkill in skill.GetFormSkills())
-			{
-				if (!formSkill.IsUnlocked)
-				{
-					continue;
-				}
-
-				yield return formSkill;
-			}
-		}
-
-		foreach (var skill in character.InternalSkills)
-		{
-			yield return skill;
-			foreach (var formSkill in skill.GetFormSkills())
-			{
-				if (!formSkill.IsUnlocked)
-				{
-					continue;
-				}
-
-				yield return formSkill;
-			}
-		}
 	}
 }

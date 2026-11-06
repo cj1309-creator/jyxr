@@ -22,6 +22,8 @@ public partial class CharacterRosterPanel : Control
 		}
 	} = string.Empty;
 
+	public string InitialTab { get; set; } = string.Empty;
+
 	private CharacterPanel _characterPanel = null!;
 	private VBoxContainer _avatarList = null!;
 	private readonly List<IDisposable> _subscriptions = [];
@@ -34,10 +36,26 @@ public partial class CharacterRosterPanel : Control
 		_subscriptions.Add(Game.Session.Events.Subscribe<PartyChangedEvent>(_ => Render()));
 		_subscriptions.Add(Game.Session.Events.Subscribe<CharacterChangedEvent>(_ => Render()));
 		_subscriptions.Add(Game.Session.Events.Subscribe<SaveLoadedEvent>(_ => Render()));
+		
 
 		if (!string.IsNullOrWhiteSpace(CharacterId))
 		{
 			Render();
+		}
+
+		ApplyInitialTab();
+	}
+
+	private void ApplyInitialTab()
+	{
+		switch (InitialTab)
+		{
+			case "party":
+				_characterPanel.ShowPartyButton(6);
+				break;
+			case "Roster":
+				_characterPanel.ShowRosterButton(0);
+				break;
 		}
 	}
 
@@ -97,7 +115,6 @@ public partial class CharacterRosterPanel : Control
 		button.CharacterSelected += SelectCharacter;
 		return button;
 	}
-
 	private void SelectCharacter(string characterId)
 	{
 		if (string.Equals(CharacterId, characterId, StringComparison.Ordinal))

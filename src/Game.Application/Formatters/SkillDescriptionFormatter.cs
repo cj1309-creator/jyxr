@@ -32,7 +32,7 @@ public static class SkillDescriptionFormatter
                 skillMaxLevelPolicy.GetMaxLevel(internalSkill)),
             FormSkillInstance formSkill => FormatFormSkillBbCodeCn(formSkill),
             LegendSkillInstance legendSkill => FormatLegendSkillBbCodeCn(legendSkill, contentRepository),
-            SpecialSkillInstance specialSkill => FormatSpecialSkillBbCodeCn(specialSkill),
+            SpecialSkillInstance specialSkill => FormatSpecialSkillBbCodeCn(specialSkill, contentRepository),
             _ => throw new NotSupportedException($"Unsupported skill type '{skill.GetType().Name}'.")
         };
     }
@@ -109,13 +109,15 @@ public static class SkillDescriptionFormatter
         return builder.ToString().TrimEnd('\n');
     }
 
-    private static string FormatSpecialSkillBbCodeCn(SpecialSkillInstance skill)
+    private static string FormatSpecialSkillBbCodeCn(
+        SpecialSkillInstance skill,
+        IContentRepository contentRepository)
     {
         var builder = new StringBuilder();
         AppendDescription(builder, skill.Description);
         AppendBaseCombatLines(builder, skill);
         AppendBuffLines(builder, skill.Buffs);
-        AppendSpecialSkillEffectLines(builder, skill.Definition.Effects);
+        AppendSpecialSkillEffectLines(builder, skill.Definition.Effects, contentRepository);
         return builder.ToString().TrimEnd('\n');
     }
 
@@ -167,7 +169,8 @@ public static class SkillDescriptionFormatter
 
     private static void AppendSpecialSkillEffectLines(
         StringBuilder builder,
-        IReadOnlyList<BattleEffectDefinition>? effects)
+        IReadOnlyList<BattleEffectDefinition>? effects,
+        IContentRepository contentRepository)
     {
         foreach (var effect in effects ?? [])
         {
@@ -197,9 +200,24 @@ public static class SkillDescriptionFormatter
                 ApplyBuffBattleEffectDefinition addBuff =>
                     FormatTargetedEffectCn($"附加状态「{addBuff.Buff.Name}」", addBuff.Target) +
                     $"（等级 {addBuff.Level}，持续 {addBuff.Duration} 回合）",
+                SummonCombatantBattleHookEffectDefinition summon =>
+                    $"召唤「{FormatSummonedCharactersCn(summon.characterIds, contentRepository)}」",
                 _ => throw new NotSupportedException($"Unsupported special skill effect '{effect.GetType().Name}'.")
             });
         }
+    }
+
+    private static string FormatSummonedCharactersCn(
+        IReadOnlyList<string> characterIds,
+        IContentRepository contentRepository)
+    {
+        var names = characterIds
+            .Select(characterId => contentRepository.TryGetCharacter(characterId, out var definition)
+                ? definition.Name
+                : characterId)
+            .GroupBy(name => name, StringComparer.Ordinal)
+            .Select(group => group.Count() > 1 ? $"{group.Key}×{group.Count()}" : group.Key);
+        return string.Join("、", names);
     }
 
     private static string FormatTargetedEffectCn(string text, BattleUnitSelectorDefinition target) =>

@@ -62,6 +62,24 @@ public enum EquipmentSlotType
     Accessory,
 }
 
+public enum EquipmentSkillSlotType
+{
+    [JsonStringEnumMemberName("external")]
+    External,
+    [JsonStringEnumMemberName("internal")]
+    Internal,
+    [JsonStringEnumMemberName("special")]
+    Special,
+}
+public enum AdditionalStatType
+{
+    [JsonStringEnumMemberName("badreputation")]
+    BadReputation,
+    [JsonStringEnumMemberName("goodreputation")]
+    GoodReputation,
+}
+
+
 public enum StatType
 {
     [JsonStringEnumMemberName("bili")]
@@ -112,4 +130,8 @@ public enum StatType
     Speed,
     [JsonStringEnumMemberName("movement")]
     Movement,
+    [JsonStringEnumMemberName("charm")]
+    Charm,
+    [JsonStringEnumMemberName("reputation")]
+    Reputation,
 }

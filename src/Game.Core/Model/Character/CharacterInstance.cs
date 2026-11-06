@@ -8,6 +8,7 @@ namespace Game.Core.Model.Character;
 public sealed class CharacterInstance
 {
     public const int MaxBattleRage = 6;
+    public const int UsedSkillSlotCount = 10;
 
     public required string Id { get; init; }
     public required CharacterDefinition Definition { get; init; }
@@ -37,6 +38,10 @@ public sealed class CharacterInstance
     public List<InternalSkillInstance> InternalSkills { get; } = [];
     public string? EquippedInternalSkillId { get; private set; }
     public Dictionary<EquipmentSlotType, EquipmentInstance> EquippedItems { get; } = [];
+
+    private readonly string?[] _usedSkillSlots = new string?[UsedSkillSlotCount];
+
+    public IReadOnlyList<string?> UsedSkillSlots => _usedSkillSlots;
 
     public void GrantExperience(int experience)
     {
@@ -187,6 +192,77 @@ public sealed class CharacterInstance
         return SkillListMutation.GetRequired(ExternalSkills, skillId, "External skill").SetActive(isActive);
     }
 
+    public bool SetUsedSkillSlot(int slotIndex, string? skillId)
+    {
+        ArgumentOutOfRangeException.ThrowIfNegative(slotIndex);
+        ArgumentOutOfRangeException.ThrowIfGreaterThanOrEqual(slotIndex, UsedSkillSlotCount);
+
+        var targetSkillId = string.IsNullOrWhiteSpace(skillId) ? null : skillId;
+        var changed = false;
+
+        if (targetSkillId is not null)
+        {
+            SkillListMutation.GetRequired(ExternalSkills, targetSkillId, "External skill");
+
+            for (var index = 0; index < _usedSkillSlots.Length; index++)
+            {
+                if (index == slotIndex || !string.Equals(_usedSkillSlots[index], targetSkillId, StringComparison.Ordinal))
+                {
+                    continue;
+                }
+
+                _usedSkillSlots[index] = null;
+                changed = true;
+            }
+        }
+
+        if (!string.Equals(_usedSkillSlots[slotIndex], targetSkillId, StringComparison.Ordinal))
+        {
+            _usedSkillSlots[slotIndex] = targetSkillId;
+            changed = true;
+        }
+
+        return changed;
+    }
+    public string? GetUsedSkillSlot(int slotIndex)
+    {
+        return _usedSkillSlots[slotIndex] ;
+    }
+    public bool RemoveUsedSkillSlot(int slotIndex)
+    {
+        ArgumentOutOfRangeException.ThrowIfNegative(slotIndex);
+        ArgumentOutOfRangeException.ThrowIfGreaterThanOrEqual(slotIndex, UsedSkillSlotCount);
+
+            _usedSkillSlots[slotIndex] = null;
+            var changed = true;
+       
+
+        return changed;
+    }
+
+    public void RestoreUsedSkillSlots(IReadOnlyList<string?>? skillIds)
+    {
+        Array.Clear(_usedSkillSlots);
+        if (skillIds is null)
+        {
+            return;
+        }
+
+        var assignedSkillIds = new HashSet<string>(StringComparer.Ordinal);
+        for (var index = 0; index < skillIds.Count && index < _usedSkillSlots.Length; index++)
+        {
+            var skillId = skillIds[index];
+            if (string.IsNullOrWhiteSpace(skillId) ||
+                !assignedSkillIds.Add(skillId) ||
+                SkillListMutation.Find(ExternalSkills, skillId) is null)
+            {
+                continue;
+            }
+
+            _usedSkillSlots[index] = skillId;
+        }
+    }
+
     public bool SetFormSkillActive(string sourceSkillId, string formSkillId, bool isActive)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(sourceSkillId);
@@ -313,8 +389,16 @@ public sealed class CharacterInstance
     public int? GetExternalSkillLevel(string externalSkillId) =>
         SkillListMutation.Find(ExternalSkills, externalSkillId)?.Level;
 
+
+
     public int? GetInternalSkillLevel(string internalSkillId) =>
         SkillListMutation.Find(InternalSkills, internalSkillId)?.Level;
+
+    public ExternalSkillInstance? GetExternalSkill(string externalSkillId) =>
+    SkillListMutation.Find(ExternalSkills, externalSkillId);
+
+   // public SkillInstance? GetExternalSkill(string externalSkillId) =>
+   //SkillListMutation.Find(ExternalSkills, externalSkillId);
 
     public IReadOnlyList<FormSkillInstance> GetFormSkills() =>
         ExternalSkills.SelectMany(skill => skill.GetFormSkills())

@@ -123,7 +123,7 @@ offset_top = 264.0
 offset_right = 1691.0
 offset_bottom = 913.0
 theme = SubResource("Theme_dr12l")
-current_tab = 1
+current_tab = 2
 tabs_visible = false
 
 [node name="AdventureTab" type="Control" parent="ContentRoot/HeroTabContainer" index="1" unique_id=1308277667]
@@ -191,6 +191,7 @@ text = "[center][font_size=34][color=#f0ebe3]生涯留痕[/color][/font_size]
 fit_content = true
 
 [node name="AchievementTab" type="Control" parent="ContentRoot/HeroTabContainer" index="2" unique_id=728918971]
+visible = false
 layout_mode = 2
 metadata/_tab_index = 1
 
@@ -235,7 +236,6 @@ offset_bottom = 617.0
 text = "预览"
 
 [node name="MasteryTab" type="Control" parent="ContentRoot/HeroTabContainer" index="3" unique_id=627145902]
-visible = false
 layout_mode = 2
 metadata/_tab_index = 2
 

@@ -22,11 +22,13 @@ public partial class CharacterEquipmentSelectionPanel : JyPanel
 	public override void _Ready()
 	{
 		base._Ready();
+		ClosePanelRequested -= QueueFree;
+		ClosePanelRequested += Hide;
 		_gridContainer = GetNode<GridContainer>("%GridContainer");
 		_titleLabel = GetNode<Label>("%TitleLabel");
 		_emptyLabel = GetNode<Label>("%EmptyLabel");
 		_hintLabel = GetNode<Label>("%HintLabel");
-		_saveLoadedSubscription = Game.Session.Events.Subscribe<SaveLoadedEvent>(_ => QueueFree());
+		_saveLoadedSubscription = Game.Session.Events.Subscribe<SaveLoadedEvent>(_ => Hide());
 		Refresh();
 	}
 
@@ -126,7 +128,7 @@ public partial class CharacterEquipmentSelectionPanel : JyPanel
 				detailPanel.QueueFree();
 			}
 
-			QueueFree();
+			Hide();
 		}
 		catch (Exception exception)
 		{
