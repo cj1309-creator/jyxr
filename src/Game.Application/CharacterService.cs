@@ -403,10 +403,44 @@ public sealed class CharacterService
         PublishToastAndCharacterChanged(character, $"{character.Name} 移除特技【{specialSkillId}】");
     }
 
+    public void RemoveUsedSkillSlot(string characterId, int slotIndex)
+    {
+        var character = GetPartyMember(characterId);
+        if (!character.RemoveUsedSkillSlot(slotIndex))
+        {
+            return;
+        }
+
+        PublishCharacterChanged(character);
+    }
+
     public void SetExternalSkillActive(string characterId, string skillId, bool isActive)
     {
         var character = GetPartyMember(characterId);
         if (!character.SetExternalSkillActive(skillId, isActive))
+        {
+            return;
+        }
+
+        PublishCharacterChanged(character);
+    }
+
+    public void SetUsedSkillSlot(string characterId, int slotIndex, string? skillId)
+    {
+        var character = GetPartyMember(characterId);
+        if (!character.SetUsedSkillSlot(slotIndex, skillId))
+        {
+            return;
+        }
+
+        PublishCharacterChanged(character);
+    }
+
+
+    public void ChangeReputation(string characterId, int goodDelta, int badDelta)
+    {
+        var character = GetPartyMember(characterId);
+        if (!character.ChangeReputation(goodDelta, badDelta))
         {
             return;
         }

@@ -5,6 +5,9 @@ using Game.Core.Definitions.Skills;
 using Game.Core.Model;
 using Game.Core.Model.Character;
 using Game.Core.Model.Skills;
+using Game.Core.Persistence;
+using Game.Core.Serialization;
+using System.Text.Json;
 
 namespace Game.Tests;
 
@@ -227,6 +230,120 @@ public sealed class CharacterTests
         Assert.True(changed);
         Assert.Same(instance, character.ExternalSkills[0]);
         Assert.False(instance.IsActive);
+    }
+
+    [Fact]
+    public void SetUsedSkillSlot_MovesSkillOutOfItsPreviousSlot()
+    {
+        var first = TestContentFactory.CreateExternalSkill("focus_strike");
+        var second = TestContentFactory.CreateExternalSkill("palm_wave");
+        var character = TestContentFactory.CreateCharacterInstance(
+            "char_001",
+            TestContentFactory.CreateCharacterDefinition(
+                "hero_knight",
+                externalSkills:
+                [
+                    new InitialExternalSkillEntryDefinition(first, Level: 1),
+                    new InitialExternalSkillEntryDefinition(second, Level: 1),
+                ]));
+
+        Assert.True(character.SetUsedSkillSlot(0, first.Id));
+        Assert.True(character.SetUsedSkillSlot(4, first.Id));
+
+        Assert.Equal(CharacterInstance.UsedSkillSlotCount, character.UsedSkillSlots.Count);
+        Assert.Null(character.UsedSkillSlots[0]);
+        Assert.Equal(first.Id, character.UsedSkillSlots[4]);
+
+        Assert.True(character.SetUsedSkillSlot(7, second.Id));
+        Assert.False(character.SetUsedSkillSlot(7, second.Id));
+        Assert.True(character.SetUsedSkillSlot(7, null));
+        Assert.Null(character.UsedSkillSlots[7]);
+    }
+
+    [Fact]
+    public void SetUsedSkillSlot_RejectsUnownedSkillAndInvalidIndex()
+    {
+        var owned = TestContentFactory.CreateExternalSkill("focus_strike");
+        var unowned = TestContentFactory.CreateExternalSkill("palm_wave");
+        var character = TestContentFactory.CreateCharacterInstance(
+            "char_001",
+            TestContentFactory.CreateCharacterDefinition(
+                "hero_knight",
+                externalSkills: [new InitialExternalSkillEntryDefinition(owned, Level: 1)]));
+
+        Assert.Throws<InvalidOperationException>(() => character.SetUsedSkillSlot(0, unowned.Id));
+        Assert.Throws<ArgumentOutOfRangeException>(
+            () => character.SetUsedSkillSlot(CharacterInstance.UsedSkillSlotCount, owned.Id));
+        Assert.Throws<ArgumentOutOfRangeException>(() => character.SetUsedSkillSlot(-1, owned.Id));
+    }
+
+    [Fact]
+    public void CharacterRecord_RoundTripsUsedSkillSlots()
+    {
+        var first = TestContentFactory.CreateExternalSkill("focus_strike");
+        var second = TestContentFactory.CreateExternalSkill("palm_wave");
+        var definition = TestContentFactory.CreateCharacterDefinition(
+            "hero_knight",
+            externalSkills:
+            [
+                new InitialExternalSkillEntryDefinition(first, Level: 1),
+                new InitialExternalSkillEntryDefinition(second, Level: 1),
+            ]);
+        var character = TestContentFactory.CreateCharacterInstance("char_001", definition);
+        character.SetUsedSkillSlot(2, first.Id);
+        character.SetUsedSkillSlot(5, second.Id);
+
+        var json = JsonSerializer.Serialize(CharacterMapper.ToRecord(character), GameJson.Default);
+        var record = JsonSerializer.Deserialize<CharacterRecord>(json, GameJson.Default)!;
+        var repository = TestContentFactory.CreateRepository(
+            characters: [definition],
+            externalSkills: [first, second]);
+
+        var restored = CharacterMapper.FromRecord(record, repository);
+
+        Assert.Equal(CharacterInstance.UsedSkillSlotCount, restored.UsedSkillSlots.Count);
+        Assert.Equal(first.Id, restored.UsedSkillSlots[2]);
+        Assert.Equal(second.Id, restored.UsedSkillSlots[5]);
+    }
+
+    [Fact]
+    public void ReputationSumsAbsoluteGoodAndBad()
+    {
+        var character = TestContentFactory.CreateCharacterInstance(
+            "char_001",
+            TestContentFactory.CreateCharacterDefinition("hero_knight"));
+
+        Assert.Equal(0, character.Reputation.Total);
+
+        Assert.True(character.ChangeReputation(10, -2));
+        Assert.Equal(10, character.Reputation.Good);
+        Assert.Equal(-2, character.Reputation.Bad);
+        Assert.Equal(12, character.Reputation.Total);
+
+        Assert.True(character.ChangeReputation(-4, -3));
+        Assert.Equal(6, character.Reputation.Good);
+        Assert.Equal(-5, character.Reputation.Bad);
+        Assert.Equal(11, character.Reputation.Total);
+
+        Assert.False(character.ChangeReputation(0, 0));
+    }
+
+    [Fact]
+    public void CharacterRecord_RoundTripsReputation()
+    {
+        var definition = TestContentFactory.CreateCharacterDefinition("hero_knight");
+        var character = TestContentFactory.CreateCharacterInstance("char_001", definition);
+        character.ChangeReputation(7, -3);
+
+        var json = JsonSerializer.Serialize(CharacterMapper.ToRecord(character), GameJson.Default);
+        var record = JsonSerializer.Deserialize<CharacterRecord>(json, GameJson.Default)!;
+        var repository = TestContentFactory.CreateRepository(characters: [definition]);
+
+        var restored = CharacterMapper.FromRecord(record, repository);
+
+        Assert.Equal(7, restored.Reputation.Good);
+        Assert.Equal(-3, restored.Reputation.Bad);
+        Assert.Equal(10, restored.Reputation.Total);
     }
 
     [Fact]

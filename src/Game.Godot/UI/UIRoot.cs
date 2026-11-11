@@ -256,9 +256,21 @@ public partial class UIRoot : Control
 			{
 				throw new InvalidOperationException("Character roster panel scene root must be CharacterRosterPanel.");
 			}
+            
 
-			characterRosterPanel.CharacterId = characterId;
+            characterRosterPanel.CharacterId = characterId;
 		});
+	public Control ShowCharacterPartyPanel(string characterId,string type) =>
+	ShowPopupPanel(CharacterRosterPanelScene, "character roster panel", panel =>
+	{
+		if (panel is not CharacterRosterPanel characterRosterPanel)
+		{
+			throw new InvalidOperationException("Character roster panel scene root must be CharacterRosterPanel.");
+		}
+
+		characterRosterPanel.InitialTab = type;
+		characterRosterPanel.CharacterId = characterId;
+	});
 
 	public Control ShowInventoryPanel() => ShowMainPanel(InventoryPanelScene, "inventory panel");
 

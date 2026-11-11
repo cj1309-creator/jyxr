@@ -11,24 +11,40 @@
 [node name="CharacterEquipmentTab" type="Control" unique_id=372872577]
 layout_mode = 3
 anchors_preset = 0
+offset_right = 1920.0
+offset_bottom = 1080.0
 script = ExtResource("1_script")
 EquipmentSelectionPanelScene = ExtResource("7_selection_panel")
 
+[node name="CharacterEquipmentSelectionPanel" parent="." unique_id=292688310 instance=ExtResource("7_selection_panel")]
+unique_name_in_owner = true
+layout_mode = 1
+offset_top = 169.0
+
 [node name="HBoxContainer" type="HBoxContainer" parent="." unique_id=1750653590]
+visible = false
 layout_mode = 0
-offset_left = 236.0
-offset_top = 120.0
-offset_right = 936.0
-offset_bottom = 320.0
+offset_left = 39.0
+offset_top = 440.0
+offset_right = 739.0
+offset_bottom = 803.0
 theme_override_constants/separation = 50
 
-[node name="WeaponSlot" parent="HBoxContainer" unique_id=663832615 instance=ExtResource("6_slot_button")]
+[node name="VBoxContainer" type="VBoxContainer" parent="." unique_id=50134399]
+layout_mode = 0
+offset_left = 86.0
+offset_top = 272.0
+offset_right = 236.0
+offset_bottom = 762.0
+theme_override_constants/separation = 20
+
+[node name="WeaponSlot" parent="VBoxContainer" unique_id=663832615 instance=ExtResource("6_slot_button")]
 unique_name_in_owner = true
-custom_minimum_size = Vector2(200, 200)
+custom_minimum_size = Vector2(150, 150)
 layout_mode = 2
 texture_normal = ExtResource("2_weapon_slot")
 
-[node name="WeaponBox" parent="HBoxContainer/WeaponSlot" unique_id=111528472 instance=ExtResource("5_box")]
+[node name="WeaponBox" parent="VBoxContainer/WeaponSlot" unique_id=111528472 instance=ExtResource("5_box")]
 unique_name_in_owner = true
 visible = false
 layout_mode = 0
@@ -39,13 +55,13 @@ offset_bottom = 186.0
 scale = Vector2(1.4048016, 1.4048016)
 pivot_offset = Vector2(90, 90)
 
-[node name="ArmorSlot" parent="HBoxContainer" unique_id=643875073 instance=ExtResource("6_slot_button")]
+[node name="ArmorSlot" parent="VBoxContainer" unique_id=643875073 instance=ExtResource("6_slot_button")]
 unique_name_in_owner = true
-custom_minimum_size = Vector2(200, 200)
+custom_minimum_size = Vector2(150, 150)
 layout_mode = 2
 texture_normal = ExtResource("3_armor_slot")
 
-[node name="ArmorBox" parent="HBoxContainer/ArmorSlot" unique_id=1877322927 instance=ExtResource("5_box")]
+[node name="ArmorBox" parent="VBoxContainer/ArmorSlot" unique_id=1877322927 instance=ExtResource("5_box")]
 unique_name_in_owner = true
 visible = false
 layout_mode = 0
@@ -56,13 +72,13 @@ offset_bottom = 186.0
 scale = Vector2(1.4048016, 1.4048016)
 pivot_offset = Vector2(90, 90)
 
-[node name="AccessorySlot" parent="HBoxContainer" unique_id=583114036 instance=ExtResource("6_slot_button")]
+[node name="AccessorySlot" parent="VBoxContainer" unique_id=583114036 instance=ExtResource("6_slot_button")]
 unique_name_in_owner = true
-custom_minimum_size = Vector2(200, 200)
+custom_minimum_size = Vector2(150, 150)
 layout_mode = 2
 texture_normal = ExtResource("4_accessory_slot")
 
-[node name="AccessoryBox" parent="HBoxContainer/AccessorySlot" unique_id=1035500963 instance=ExtResource("5_box")]
+[node name="AccessoryBox" parent="VBoxContainer/AccessorySlot" unique_id=1035500963 instance=ExtResource("5_box")]
 unique_name_in_owner = true
 visible = false
 layout_mode = 0

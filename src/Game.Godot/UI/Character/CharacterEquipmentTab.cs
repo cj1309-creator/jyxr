@@ -1,6 +1,7 @@
 using Game.Application;
 using Game.Core.Model;
 using Game.Core.Model.Character;
+using Game.Presentation.Items;
 using Godot;
 
 namespace Game.Godot.UI;
@@ -9,13 +10,16 @@ public partial class CharacterEquipmentTab : Control
 {
 	[Export]
 	public PackedScene EquipmentSelectionPanelScene { get; set; } = null!;
-
+	private static readonly IReadOnlyList<ItemCategoryOption> Categories = ItemCatalogPresentation.Categories;
 	private JyButton _weaponSlot = null!;
 	private JyButton _armorSlot = null!;
 	private JyButton _accessorySlot = null!;
 	private CharacterEquipmentBox _weaponBox = null!;
 	private CharacterEquipmentBox _armorBox = null!;
 	private CharacterEquipmentBox _accessoryBox = null!;
+	private CharacterEquipmentSelectionPanel _characterEquipmentSelectionPanel = null!;
+	private EquipmentSlotType _equipmentSlotType ;
+
 
 	private CharacterInstance? _character;
 	public bool IsReadOnly { get; set; }
@@ -28,10 +32,13 @@ public partial class CharacterEquipmentTab : Control
 		_weaponBox = GetNode<CharacterEquipmentBox>("%WeaponBox");
 		_armorBox = GetNode<CharacterEquipmentBox>("%ArmorBox");
 		_accessoryBox = GetNode<CharacterEquipmentBox>("%AccessoryBox");
+		_characterEquipmentSelectionPanel= GetNode<CharacterEquipmentSelectionPanel>("%CharacterEquipmentSelectionPanel");
+
 
 		ConnectSlot(_weaponSlot, _weaponBox, EquipmentSlotType.Weapon);
 		ConnectSlot(_armorSlot, _armorBox, EquipmentSlotType.Armor);
 		ConnectSlot(_accessorySlot, _accessoryBox, EquipmentSlotType.Accessory);
+		_characterEquipmentSelectionPanel.Visible = false;
 		Refresh();
 	}
 
@@ -107,8 +114,14 @@ public partial class CharacterEquipmentTab : Control
 			{
 				return;
 			}
-
+			if (_characterEquipmentSelectionPanel.Visible == false || _characterEquipmentSelectionPanel.Visible == true && _equipmentSlotType!= slotType) { 
 			ShowEquipmentSelection(slotType);
+			}
+			else if (_characterEquipmentSelectionPanel.Visible == true)
+			{
+				_characterEquipmentSelectionPanel.Visible = false;
+			}
+
 			return;
 		}
 
@@ -146,15 +159,20 @@ public partial class CharacterEquipmentTab : Control
 			throw new InvalidOperationException("EquipmentSelectionPanelScene is not assigned.");
 		}
 
-		var instance = EquipmentSelectionPanelScene.Instantiate();
-		if (instance is not CharacterEquipmentSelectionPanel panel)
-		{
-			instance.QueueFree();
-			throw new InvalidOperationException("EquipmentSelectionPanel scene root must be CharacterEquipmentSelectionPanel.");
-		}
+		//var instance = EquipmentSelectionPanelScene.Instantiate();
+		//if (instance is not CharacterEquipmentSelectionPanel panel)
+		//{
+		//	instance.QueueFree();
+		//	throw new InvalidOperationException("EquipmentSelectionPanel scene root must be CharacterEquipmentSelectionPanel.");
+		//}
 
-		panel.Configure(_character.Id, slotType);
-		UIRoot.Instance.ModalLayer.AddChild(panel);
+		//panel.Configure(_character.Id, slotType);
+		//UIRoot.Instance.ModalLayer.AddChild(panel);
+		_equipmentSlotType = slotType;
+
+		_characterEquipmentSelectionPanel.Configure(_character.Id, slotType);
+
+		_characterEquipmentSelectionPanel.Visible = true;
 	}
 
 	private void Unequip(EquipmentSlotType slotType)
@@ -182,4 +200,6 @@ public partial class CharacterEquipmentTab : Control
 			UIRoot.Instance.ShowSuggestion(exception.Message);
 		}
 	}
+
+
 }

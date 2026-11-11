@@ -36,6 +36,9 @@ internal static class SkillListMutation
     public static TSkill? Find<TSkill>(IEnumerable<TSkill> skills, string skillId)
         where TSkill : SkillInstance =>
         skills.FirstOrDefault(skill => string.Equals(skill.Id, skillId, StringComparison.Ordinal));
+    public static TSkill? FindName<TSkill>(IEnumerable<TSkill> skills, string skillName)
+    where TSkill : SkillInstance =>
+    skills.FirstOrDefault(skill => string.Equals(skill.Name, skillName, StringComparison.Ordinal));
 
     public static TSkill GetRequired<TSkill>(IEnumerable<TSkill> skills, string skillId, string kind)
         where TSkill : SkillInstance =>

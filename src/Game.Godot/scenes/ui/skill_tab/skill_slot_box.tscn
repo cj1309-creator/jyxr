@@ -1,0 +1,60 @@
+[gd_scene format=3 uid="uid://cxywwkh2w6aaf"]
+
+[ext_resource type="Script" uid="uid://bil3be4w58hpr" path="res://UI/Skills/SkillSlotBox.cs" id="1_mea2b"]
+[ext_resource type="LabelSettings" uid="uid://bq4vwt6mmhytg" path="res://assets/theme/item_name.tres" id="2_mea2b"]
+
+[sub_resource type="DPITexture" id="DPITexture_os2tc"]
+
+[node name="SkillSlotBox" type="TextureButton" unique_id=1420690908]
+custom_minimum_size = Vector2(85, 85)
+offset_right = 85.0
+offset_bottom = 85.0
+script = ExtResource("1_mea2b")
+
+[node name="Mask" type="TextureRect" parent="." unique_id=2003299476]
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -43.5
+offset_top = -43.5
+offset_right = 41.5
+offset_bottom = 41.5
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+texture = SubResource("DPITexture_os2tc")
+expand_mode = 1
+
+[node name="Avatar" type="TextureRect" parent="Mask" unique_id=1234098795]
+unique_name_in_owner = true
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -42.5
+offset_top = -42.5
+offset_right = 42.5
+offset_bottom = 42.5
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+expand_mode = 1
+stretch_mode = 4
+
+[node name="NameLabel" type="Label" parent="Mask/Avatar" unique_id=509729854]
+unique_name_in_owner = true
+layout_mode = 0
+offset_top = 24.0
+offset_right = 85.0
+offset_bottom = 66.0
+text = "已装备"
+label_settings = ExtResource("2_mea2b")
+horizontal_alignment = 1
+vertical_alignment = 1
+autowrap_mode = 3
+justification_flags = 161
